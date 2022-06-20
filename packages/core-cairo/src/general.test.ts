@@ -7,7 +7,6 @@ import { printContract } from './print';
 function testGeneral(title: string, opts: Partial<GeneralOptions>) {
   test(title, t => {
     const c = buildGeneral({
-      name: 'MyContract',
       ...opts,
     });
     t.snapshot(printContract(c));
@@ -20,7 +19,6 @@ function testGeneral(title: string, opts: Partial<GeneralOptions>) {
  function testAPIEquivalence(title: string, opts?: GeneralOptions) {
   test(title, t => {
     t.is(general.print(opts), printContract(buildGeneral({
-      name: 'MyContract',
       ...opts,
     })));
   });
@@ -52,10 +50,7 @@ testGeneral('pausable with access control disabled', {
 
 testAPIEquivalence('general API default');
 
-testAPIEquivalence('general API basic', { name: 'CustomContract' });
-
 testAPIEquivalence('general API full upgradeable', {
-  name: 'CustomContract',
   access: 'ownable',
   pausable: true,
   upgradeable: true,

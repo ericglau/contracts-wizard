@@ -8,7 +8,6 @@ import { printContract } from './print';
 import { setAccessControlForContract } from './set-access-control';
 
 export const defaults: Required<GeneralOptions> = {
-  name: 'MyContract',
   pausable: false,
   access: commonDefaults.access,
   upgradeable: commonDefaults.upgradeable,
@@ -20,7 +19,6 @@ export function printGeneral(opts: GeneralOptions = defaults): string {
 }
 
 export interface GeneralOptions extends CommonOptions {
-  name?: string; // name is only used for file name when downloading file
   pausable?: boolean;
 }
 
@@ -28,7 +26,6 @@ function withDefaults(opts: GeneralOptions): Required<GeneralOptions> {
   return {
     ...opts,
     ...withCommonDefaults(opts),
-    name: opts.name ?? defaults.name,
     pausable: opts.pausable ?? defaults.pausable,
   };
 }

@@ -66,7 +66,8 @@
     const downloadCairoHandler = async () => {
       const blob = new Blob([code], { type: 'text/plain' });
       if (opts) {
-        saveAs(blob, opts.name + '.cairo');
+        const name = ('name' in opts) ? opts.name : 'MyContract';
+        saveAs(blob, name + '.cairo');
         await postConfig(opts, 'download-npm', language);
       }
     };
