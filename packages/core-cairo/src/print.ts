@@ -32,7 +32,6 @@ export function printContract(contract: Contract): string {
       ],
 
       [
-        `from starkware.cairo.common.cairo_builtins import HashBuiltin`,
         ...starkwareImports,
       ],
 

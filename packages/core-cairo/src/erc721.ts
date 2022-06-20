@@ -9,7 +9,7 @@ import { defineModules } from './utils/define-modules';
 import { defaults as commonDefaults } from './common-options';
 import { printContract } from './print';
 import { defineNamespaces } from './utils/define-namespaces';
-import { addUint256 } from './utils/uint256';
+import { importUint256 } from './utils/uint256';
 
 export const defaults: Required<ERC721Options> = {
   name: 'MyToken',
@@ -54,7 +54,6 @@ export function buildERC721(opts: ERC721Options): Contract {
   const allOpts = withDefaults(opts);
 
   addBase(c, allOpts.name, allOpts.symbol);
-  addUint256(c);
   addSupportsInterface(c);
 
   c.addFunction(functions.name);
@@ -69,6 +68,8 @@ export function buildERC721(opts: ERC721Options): Contract {
   c.addFunction(functions.setApprovalForAll);
   c.addFunction(functions.transferFrom);
   c.addFunction(functions.safeTransferFrom);
+
+  importUint256(c);
 
   if (allOpts.pausable) {
     addPausable(c, allOpts.access, [functions.approve, functions.setApprovalForAll, functions.transferFrom, functions.safeTransferFrom]);

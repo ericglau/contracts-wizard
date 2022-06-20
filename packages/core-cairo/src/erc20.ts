@@ -10,7 +10,7 @@ import { defineModules } from './utils/define-modules';
 import { defaults as commonDefaults } from './common-options';
 import { printContract } from './print';
 import { defineNamespaces } from './utils/define-namespaces';
-import { addUint256, NumberTooLarge, toUint256 } from './utils/uint256';
+import { importUint256, NumberTooLarge, toUint256 } from './utils/uint256';
 
 export const defaults: Required<ERC20Options> = {
   name: 'MyToken',
@@ -75,7 +75,6 @@ export function buildERC20(opts: ERC20Options): Contract {
   checkDecimals(allOpts.decimals);
 
   addBase(c, allOpts.name, allOpts.symbol, allOpts.decimals);
-  addUint256(c);
 
   c.addFunction(functions.name);
   c.addFunction(functions.symbol);
@@ -90,8 +89,8 @@ export function buildERC20(opts: ERC20Options): Contract {
   c.addFunction(functions.increaseAllowance);
   c.addFunction(functions.decreaseAllowance);
 
-  c.addModule(modules.bool, [], [], false);
-  c.addModuleFunction(modules.bool, 'TRUE');
+  importUint256(c);
+  importBool(c);
 
   if (allOpts.burnable) {
     addBurnable(c);
@@ -132,6 +131,11 @@ function addBase(c: ContractBuilder, name: string, symbol: string, decimals: str
     true,
     namespaces.ERC20
   );
+}
+
+function importBool(c: ContractBuilder) {
+  c.addModule(modules.bool, [], [], false);
+  c.addModuleFunction(modules.bool, 'TRUE');
 }
 
 function addBurnable(c: ContractBuilder) {

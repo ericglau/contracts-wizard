@@ -30,7 +30,7 @@ const modules = defineModules( {
   },
 })
 
-export function addUint256(c: ContractBuilder) {
+export function importUint256(c: ContractBuilder) {
   c.addModule(modules.uint256, [], [], false);
   c.addModuleFunction(modules.uint256, 'Uint256');
 }
