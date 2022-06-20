@@ -10,7 +10,7 @@ import { defineModules } from './utils/define-modules';
 import { defaults as commonDefaults } from './common-options';
 import { printContract } from './print';
 import { defineNamespaces } from './utils/define-namespaces';
-import { NumberTooLarge, toUint256 } from './utils/uint256';
+import { addUint256, NumberTooLarge, toUint256 } from './utils/uint256';
 
 export const defaults: Required<ERC20Options> = {
   name: 'MyToken',
@@ -75,6 +75,7 @@ export function buildERC20(opts: ERC20Options): Contract {
   checkDecimals(allOpts.decimals);
 
   addBase(c, allOpts.name, allOpts.symbol, allOpts.decimals);
+  addUint256(c);
 
   c.addFunction(functions.name);
   c.addFunction(functions.symbol);

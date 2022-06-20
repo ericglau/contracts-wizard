@@ -9,6 +9,7 @@ import { defineModules } from './utils/define-modules';
 import { defaults as commonDefaults } from './common-options';
 import { printContract } from './print';
 import { defineNamespaces } from './utils/define-namespaces';
+import { addUint256 } from './utils/uint256';
 
 export const defaults: Required<ERC721Options> = {
   name: 'MyToken',
@@ -53,6 +54,7 @@ export function buildERC721(opts: ERC721Options): Contract {
   const allOpts = withDefaults(opts);
 
   addBase(c, allOpts.name, allOpts.symbol);
+  addUint256(c);
   addSupportsInterface(c);
 
   c.addFunction(functions.name);
