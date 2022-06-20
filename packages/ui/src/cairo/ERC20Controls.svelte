@@ -4,6 +4,7 @@
   import type { KindedOptions, OptionsErrorMessages } from '@openzeppelin/wizard-cairo';
   import { premintPattern, erc20, infoDefaults } from '@openzeppelin/wizard-cairo';
 
+  import AccessControlSection from './AccessControlSection.svelte';
   import UpgradeabilitySection from './UpgradeabilitySection.svelte';
   import InfoSection from './InfoSection.svelte';
   import { error } from '../error-tooltip';
@@ -16,6 +17,11 @@
   };
 
   export let errors: undefined | OptionsErrorMessages;
+
+  let requireAccessControl: boolean;
+  $: {
+    requireAccessControl = erc20.isAccessControlRequired(opts);
+  }
 </script>
 
 <section class="controls-section">
@@ -79,6 +85,8 @@
     </label>
   </div>
 </section>
+
+<AccessControlSection bind:access={opts.access} requireAccessControl={requireAccessControl} />
 
 <UpgradeabilitySection bind:upgradeable={opts.upgradeable} />
 

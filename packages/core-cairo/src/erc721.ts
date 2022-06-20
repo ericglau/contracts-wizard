@@ -1,5 +1,5 @@
 import { Contract, ContractBuilder } from './contract';
-import { Access, setAccessControl } from './set-access-control';
+import { Access, requireAccessControl, setAccessControlForContract } from './set-access-control';
 import { addPausable, setPausable } from './add-pausable';
 import { defineFunctions } from './utils/define-functions';
 import { CommonOptions, withCommonDefaults, withImplicitArgs } from './common-options';
@@ -43,6 +43,10 @@ function withDefaults(opts: ERC721Options): Required<ERC721Options> {
   };
 }
 
+export function isAccessControlRequired(opts: Partial<ERC721Options>): boolean {
+  return opts.mintable === true || opts.pausable === true;
+}
+
 export function buildERC721(opts: ERC721Options): Contract {
   const c = new ContractBuilder();
 
@@ -82,6 +86,7 @@ export function buildERC721(opts: ERC721Options): Contract {
     addMintable(c, allOpts.access);
   }
 
+  setAccessControlForContract(c, allOpts.access);
   setUpgradeable(c, allOpts.upgradeable);
 
   setInfo(c, allOpts.info);
@@ -118,7 +123,7 @@ function addBurnable(c: ContractBuilder) {
 }
 
 function addMintable(c: ContractBuilder, access: Access) {
-  setAccessControl(c, functions.safeMint, access);
+  requireAccessControl(c, functions.safeMint, access);
   c.setFunctionBody(
     [
       'ERC721._safe_mint(to, tokenId, data_len, data)', 

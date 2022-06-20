@@ -4,6 +4,7 @@
   import type { KindedOptions } from '@openzeppelin/wizard-cairo';
   import { erc721, infoDefaults } from '@openzeppelin/wizard-cairo';
   
+  import AccessControlSection from './AccessControlSection.svelte';
   import UpgradeabilitySection from './UpgradeabilitySection.svelte';
   import InfoSection from './InfoSection.svelte';
   
@@ -12,6 +13,11 @@
     ...erc721.defaults,
     info: { ...infoDefaults }, // create new object since Info is nested
   };
+
+  let requireAccessControl: boolean;
+  $: {
+    requireAccessControl = erc721.isAccessControlRequired(opts);
+  }
 </script>
 
 <section class="controls-section">
@@ -57,6 +63,8 @@
     </label>
   </div>
 </section>
+
+<AccessControlSection bind:access={opts.access} requireAccessControl={requireAccessControl} />
 
 <UpgradeabilitySection bind:upgradeable={opts.upgradeable} />
 

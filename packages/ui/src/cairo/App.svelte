@@ -5,6 +5,7 @@
 
     import ERC20Controls from './ERC20Controls.svelte';
     import ERC721Controls from './ERC721Controls.svelte';
+    import GeneralControls from './GeneralControls.svelte';
     import CopyIcon from '../icons/CopyIcon.svelte';
     import DownloadIcon from '../icons/DownloadIcon.svelte';
     import DocsIcon from '../icons/DocsIcon.svelte';
@@ -82,6 +83,9 @@
         <button class:selected={tab === 'ERC721'} on:click={() => tab = 'ERC721'}>
           ERC721
         </button>
+        <button class:selected={tab === 'General'} on:click={() => tab = 'General'}>
+          General
+        </button>
       </OverflowMenu>
     </div>
 
@@ -115,6 +119,9 @@
       </div>
       <div class:hidden={tab !== 'ERC721'}>
         <ERC721Controls bind:opts={allOpts.ERC721} />
+      </div>
+      <div class:hidden={tab !== 'General'}>
+        <GeneralControls bind:opts={allOpts.General} />
       </div>
       <div class="controls-footer">
         <a href="https://forum.openzeppelin.com/" target="_blank">
