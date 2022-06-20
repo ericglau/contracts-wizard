@@ -36,6 +36,13 @@ export interface Namespace {
   name: string;
 }
 
+export interface StorageVariable {
+  name: string;
+  type: string;
+  view?: boolean;
+  initialize?: boolean;
+}
+
 export interface BaseFunction {
   module?: Module;
   name: string;
