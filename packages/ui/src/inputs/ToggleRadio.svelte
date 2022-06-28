@@ -10,6 +10,11 @@
   let wasValue = value || defaultValue;
 
   $: {
+    console.log("wasChecked " + wasChecked);
+    console.log("checked " + checked);
+    console.log("wasValue " + wasValue);
+    console.log("value " + value);
+
     if (!wasChecked) {
       if (checked) {
         value = wasValue;
@@ -18,6 +23,8 @@
       }
     } else if (!checked) {
       value = false;
+    } else if (value === false) {
+      checked = false;
     }
 
     wasChecked = checked;
