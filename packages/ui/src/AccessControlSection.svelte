@@ -5,14 +5,17 @@
   import HelpTooltip from './HelpTooltip.svelte';
 
   export let access: Access;
-  let wasAccess: Access = access;
-
   export let requireAccessControl: boolean;
-  let wasRequireAccessControl: boolean = requireAccessControl;
+  let defaultValueWhenEnabled: 'ownable' | 'roles' = 'ownable';
+
+  let wasRequireAccessControl = requireAccessControl;
+  let wasAccess = access;''
 
   $: {
+
+
     if (wasRequireAccessControl && !requireAccessControl) {
-      access = wasAccess; // restore to chosen option
+      access = defaultValueWhenEnabled; // restore to chosen option
     } else if (!wasRequireAccessControl && requireAccessControl) {
       let currentAccess = access;
       if (access === false) {
@@ -23,8 +26,10 @@
       wasAccess = access;
     }
 
-    wasRequireAccessControl = requireAccessControl;
-
+    // wasRequireAccessControl = requireAccessControl;
+    if (access !== false) {
+      defaultValueWhenEnabled = access;
+    }
 
 
     // if (chosenAccess !== false) {
