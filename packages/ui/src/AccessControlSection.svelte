@@ -4,31 +4,51 @@
   import ToggleRadio from './inputs/ToggleRadio.svelte';
   import HelpTooltip from './HelpTooltip.svelte';
 
-  export let access: Access; // effective access
-  export let requireAccessControl: boolean;
-
   let defaultValueWhenEnabled: 'ownable' | 'roles' = 'ownable';
 
-  let impliedAccess: Access = requireAccessControl ? defaultValueWhenEnabled : false;
-  let chosenAccess: Access = access;
+  export let access: Access;
+  let wasAccess: Access = access;
+
+  export let requireAccessControl: boolean;
+  let wasRequireAccessControl: boolean = requireAccessControl;
 
   $: {
-    chosenAccess = access;
-    if (access === false) {
-      if (impliedAccess !== false) {
-        access = impliedAccess;
-      } else {
-        access = false;
-      }
+    if (wasRequireAccessControl && !requireAccessControl) {
+      access = defaultValueWhenEnabled;
     }
 
-    if (chosenAccess !== false) {
-      defaultValueWhenEnabled = chosenAccess;
-    } else {
-      impliedAccess = requireAccessControl ? defaultValueWhenEnabled : false;
+    if (!wasAccess && access) {
+      defaultValueWhenEnabled = access;
     }
+    
+    // if (wasAccess && !access) {
 
-    access = chosenAccess ? chosenAccess : impliedAccess;
+    // }
+
+    wasRequireAccessControl = requireAccessControl;
+//    wasAccess = access;
+
+
+    // if (chosenAccess !== false) {
+    //   defaultValueWhenEnabled = chosenAccess;
+    // }
+    // impliedAccess = requireAccessControl ? defaultValueWhenEnabled : false;
+    
+
+    // if (impliedAccess === false) {
+    //   access = false;
+    // }
+
+    // //access = chosenAccess ? chosenAccess : impliedAccess;
+
+    // chosenAccess = access;
+    // if (access === false) {
+    //   if (impliedAccess !== false) {
+    //     access = impliedAccess;
+    //   } else {
+    //     access = false;
+    //   }
+    // }
   }
 </script>
 
