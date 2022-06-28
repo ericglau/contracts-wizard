@@ -12,22 +12,16 @@
   let wasAccess = access;
 
   $: {
-
-
     if (wasRequireAccessControl && !requireAccessControl) {
-      access = wasAccess; // restore to chosen option
+      access = wasAccess;
     } else if (!wasRequireAccessControl && requireAccessControl) {
-      let currentAccess = access;
+      wasAccess = access;
       if (access === false) {
-        access = defaultValueWhenEnabled; // restore to chosen option
+        access = defaultValueWhenEnabled;
       }
-      wasAccess = currentAccess; // save chosen option
     } else if (wasAccess !== access) {
       wasAccess = access;
     }
-
-    console.log("a" + access);
-    console.log("d" + defaultValueWhenEnabled);
 
     wasRequireAccessControl = requireAccessControl;
     if (access !== false) {
