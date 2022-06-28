@@ -4,8 +4,6 @@
   import ToggleRadio from './inputs/ToggleRadio.svelte';
   import HelpTooltip from './HelpTooltip.svelte';
 
-  let defaultValueWhenEnabled: 'ownable' | 'roles' = 'ownable';
-
   export let access: Access;
   let wasAccess: Access = access;
 
@@ -14,19 +12,19 @@
 
   $: {
     if (wasRequireAccessControl && !requireAccessControl) {
-      access = defaultValueWhenEnabled;
+      access = wasAccess; // restore to chosen option
+    } else if (!wasRequireAccessControl && requireAccessControl) {
+      let currentAccess = access;
+      if (access === false) {
+        access = wasAccess; // restore to chosen option
+      }
+      wasAccess = currentAccess; // save chosen option
+    } else if (wasAccess !== access) {
+      wasAccess = access;
     }
-
-    if (!wasAccess && access) {
-      defaultValueWhenEnabled = access;
-    }
-    
-    // if (wasAccess && !access) {
-
-    // }
 
     wasRequireAccessControl = requireAccessControl;
-//    wasAccess = access;
+
 
 
     // if (chosenAccess !== false) {
