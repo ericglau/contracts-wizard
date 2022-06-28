@@ -38,14 +38,14 @@
   </h1>
 
   <div class="checkbox-group">
-    <label class:checked={chosenAccess === 'ownable'}>
+    <label class:checked={access === 'ownable'}>
       <input type="radio" bind:group={chosenAccess} value="ownable">
       Ownable
       <HelpTooltip link="https://docs.openzeppelin.com/contracts/4.x/api/access#Ownable">
         Simple mechanism with a single account authorized for all privileged actions.
       </HelpTooltip>
     </label>
-    <label class:checked={chosenAccess === 'roles'}>
+    <label class:checked={access === 'roles'}>
       <input type="radio" bind:group={chosenAccess} value="roles">
       Roles
       <HelpTooltip link="https://docs.openzeppelin.com/contracts/4.x/api/access#AccessControl">
