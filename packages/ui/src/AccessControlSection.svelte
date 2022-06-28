@@ -9,24 +9,27 @@
   let defaultValueWhenEnabled: 'ownable' | 'roles' = 'ownable';
 
   let wasRequireAccessControl = requireAccessControl;
-  let wasAccess = access;''
+  let wasAccess = access;
 
   $: {
 
 
     if (wasRequireAccessControl && !requireAccessControl) {
-      access = defaultValueWhenEnabled; // restore to chosen option
+      access = wasAccess; // restore to chosen option
     } else if (!wasRequireAccessControl && requireAccessControl) {
       let currentAccess = access;
       if (access === false) {
-        access = wasAccess; // restore to chosen option
+        access = defaultValueWhenEnabled; // restore to chosen option
       }
       wasAccess = currentAccess; // save chosen option
     } else if (wasAccess !== access) {
       wasAccess = access;
     }
 
-    // wasRequireAccessControl = requireAccessControl;
+    console.log("a" + access);
+    console.log("d" + defaultValueWhenEnabled);
+
+    wasRequireAccessControl = requireAccessControl;
     if (access !== false) {
       defaultValueWhenEnabled = access;
     }
