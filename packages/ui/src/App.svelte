@@ -102,6 +102,18 @@
         await postConfig(opts, 'download-vendored', language);
       }
     };
+
+    const devPackageModule = import('@openzeppelin/wizard/devPackage');
+
+    const downloadPackageHandler = async () => {
+      const { packageContract } = await devPackageModule;
+      const devPackage = packageContract(contract);
+      const blob = await devPackage.generateAsync({ type: 'blob' });
+      saveAs(blob, 'devpackage.zip');
+      if (opts) {
+        await postConfig(opts, 'download-package-hardhat', language);
+      }
+    };
 </script>
 
 <div class="container flex flex-col gap-4 p-4">
@@ -184,6 +196,14 @@
             <p>Vendored ZIP <span class="download-zip-beta">Beta</span></p>
             <p>Does not require npm package.</p>
             <p>Must be updated manually.</p>
+          </div>
+        </button>
+
+        <button class="download-option" on:click={downloadPackageHandler}>
+          <ZipIcon />
+          <div class="download-option-content">
+            <p>Development Package - Hardhat</p>
+            <p>Sample project to help you get started.</p>
           </div>
         </button>
       </Dropdown>
