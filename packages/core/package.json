@@ -9,7 +9,8 @@
   "files": [
     "/dist",
     "/src",
-    "!*.test.{js,d.ts}{,.map}"
+    "!*.test.{js,d.ts}{,.map}",
+    "/resources/hardhat"
   ],
   "scripts": {
     "prepare": "tsc && node dist/scripts/prepare.js",
