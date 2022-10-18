@@ -2,7 +2,7 @@ import JSZip from "jszip";
 import type { Contract } from "../contract";
 import { printContract } from "../print";
 
-export const hardhatConfig = `
+const hardhatConfig = `
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 
@@ -13,7 +13,7 @@ const config: HardhatUserConfig = {
 export default config;
 `;
 
-export const packageJson = (variant: string) => `\
+const packageJson = (variant: string) => `\
 {
   "name": "hardhat-ts",
   "version": "1.0.0",
@@ -32,7 +32,7 @@ export const packageJson = (variant: string) => `\
 }
 `
 
-export const tsConfig = `\
+const tsConfig = `\
 {
   "compilerOptions": {
     "target": "es2020",
@@ -45,7 +45,7 @@ export const tsConfig = `\
 }
 `
 
-export const gitIgnore = `\
+const gitIgnore = `\
 node_modules
 .env
 coverage
@@ -58,7 +58,7 @@ cache
 artifacts
 `
 
-export const test = (name: string) => `\
+const test = (name: string) => `\
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -74,7 +74,7 @@ describe("${name}", function () {
 });
 `
 
-export const script = (name: string) => `\
+const script = (name: string) => `\
 import { ethers } from "hardhat";
 
 async function main() {
@@ -94,7 +94,7 @@ main().catch((error) => {
 });
 `
 
-export function packageHardhat(c: Contract) {
+export function zipHardhat(c: Contract) {
   const zip = new JSZip();
 
   const contractsVariant = c.upgradeable ? '-upgradeable' : '';

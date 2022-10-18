@@ -103,15 +103,15 @@
       }
     };
 
-    const devPackageModule = import('@openzeppelin/wizard/devPackage');
+    const zipHardhatModule = import('@openzeppelin/wizard/zipHardhat');
 
-    const downloadPackageHandler = async () => {
-      const { packageContract } = await devPackageModule;
-      const devPackage = packageContract(contract);
+    const downloadHardhatHandler = async () => {
+      const { zipHardhat } = await zipHardhatModule;
+      const devPackage = zipHardhat(contract);
       const blob = await devPackage.generateAsync({ type: 'blob' });
-      saveAs(blob, 'devpackage.zip');
+      saveAs(blob, 'hardhat.zip');
       if (opts) {
-        await postConfig(opts, 'download-package-hardhat', language);
+        await postConfig(opts, 'download-hardhat', language);
       }
     };
 </script>
@@ -199,11 +199,11 @@
           </div>
         </button>
 
-        <button class="download-option" on:click={downloadPackageHandler}>
+        <button class="download-option" on:click={downloadHardhatHandler}>
           <ZipIcon />
           <div class="download-option-content">
             <p>Development Package - Hardhat</p>
-            <p>Sample project to help you get started.</p>
+            <p>Hardhat project to help you get started with development and testing.</p>
           </div>
         </button>
       </Dropdown>
