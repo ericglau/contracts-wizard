@@ -34,7 +34,8 @@ export const defaults: Required<ERC721Options> = {
   votes: false,
   access: commonDefaults.access,
   upgradeable: commonDefaults.upgradeable,
-  info: commonDefaults.info
+  info: commonDefaults.info,
+  opSec: commonDefaults.opSec,
 } as const;
 
 function withDefaults(opts: ERC721Options): Required<ERC721Options> {

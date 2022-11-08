@@ -73,6 +73,7 @@ export class ContractBuilder implements Contract {
   readonly name: string;
   license: string = 'MIT';
   upgradeable = false;
+  defender = false;
 
   readonly using: Using[] = [];
   readonly natspecTags: NatspecTag[] = [];

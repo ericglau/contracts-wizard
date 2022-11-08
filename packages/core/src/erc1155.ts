@@ -28,7 +28,8 @@ export const defaults: Required<ERC1155Options> = {
   updatableUri: true,
   access: false,
   upgradeable: commonDefaults.upgradeable,
-  info: commonDefaults.info
+  info: commonDefaults.info,
+  opSec: commonDefaults.opSec,
 } as const;
 
 function withDefaults(opts: ERC1155Options): Required<ERC1155Options> {

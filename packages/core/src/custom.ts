@@ -17,6 +17,7 @@ export const defaults: Required<CustomOptions> = {
   access: commonDefaults.access,
   upgradeable: commonDefaults.upgradeable,
   info: commonDefaults.info,
+  opSec: commonDefaults.opSec,
 } as const;
 
 function withDefaults(opts: CustomOptions): Required<CustomOptions> {

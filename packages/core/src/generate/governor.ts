@@ -3,6 +3,7 @@ import { accessOptions } from '../set-access-control';
 import { infoOptions } from '../set-info';
 import { upgradeableOptions } from '../set-upgradeable';
 import { generateAlternatives } from './alternatives';
+import { opSecOptions } from '../set-op-sec';
 
 const booleans = [true, false];
 
@@ -23,6 +24,7 @@ const blueprint = {
   upgradeable: upgradeableOptions,
   access: accessOptions,
   info: infoOptions,
+  opSec: opSecOptions,
 };
 
 export function* generateGovernorOptions(): Generator<Required<GovernorOptions>> {

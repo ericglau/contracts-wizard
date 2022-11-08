@@ -3,6 +3,7 @@ import { accessOptions } from '../set-access-control';
 import { infoOptions } from '../set-info';
 import { upgradeableOptions } from '../set-upgradeable';
 import { generateAlternatives } from './alternatives';
+import { opSecOptions } from '../set-op-sec';
 
 const booleans = [true, false];
 
@@ -17,6 +18,7 @@ const blueprint = {
   access: accessOptions,
   upgradeable: upgradeableOptions,
   info: infoOptions,
+  opSec: opSecOptions,
 };
 
 export function* generateERC1155Options(): Generator<Required<ERC1155Options>> {

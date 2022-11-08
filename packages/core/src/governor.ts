@@ -27,7 +27,8 @@ export const defaults: Required<GovernorOptions> = {
   
   access: commonDefaults.access,
   upgradeable: commonDefaults.upgradeable,
-  info: commonDefaults.info
+  info: commonDefaults.info,
+  opSec: commonDefaults.opSec,
 } as const;
 
 export const votesOptions = ['erc20votes', 'erc721votes', 'comp'] as const;

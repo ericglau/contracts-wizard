@@ -34,6 +34,7 @@ export const defaults: Required<ERC20Options> = {
   access: commonDefaults.access,
   upgradeable: commonDefaults.upgradeable,
   info: commonDefaults.info,
+  opSec: commonDefaults.opSec,
 } as const;
 
 function withDefaults(opts: ERC20Options): Required<ERC20Options> {
