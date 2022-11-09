@@ -7,6 +7,7 @@
   import AccessControlSection from './AccessControlSection.svelte';
   import UpgradeabilitySection from './UpgradeabilitySection.svelte';
   import InfoSection from './InfoSection.svelte';
+  import OperationalSecuritySection from './OperationalSecuritySection.svelte';
 
   export const opts: Required<KindedOptions['Custom']> = {
     kind: 'Custom',
@@ -46,3 +47,5 @@
 <UpgradeabilitySection bind:upgradeable={opts.upgradeable} />
 
 <InfoSection bind:info={opts.info} />
+
+<OperationalSecuritySection bind:opSec={opts.opSec} />
