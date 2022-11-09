@@ -22,6 +22,8 @@
     </label>
   </div>
 
-  <div class="learn-button"><b>&#9432;</b>&nbsp;&nbsp;Explore security features</div>
+  <button class="learn-button">
+    <b>&#9432;</b>&nbsp;&nbsp;Explore security features
+  </button>
 </section>
 

@@ -139,5 +139,7 @@ input.input-inline {
   padding: .75em;
   background-color: var(--solidity-blue-2);
   border-radius:5px;
+  border: none;
   color: white;
+  cursor: pointer;
 }
