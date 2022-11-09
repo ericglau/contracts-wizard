@@ -133,3 +133,11 @@ input.input-inline {
 .import-link {
   color: inherit;
 }
+
+.learn-button {
+  font-size: var(--text-small);
+  padding: .75em;
+  background-color: var(--solidity-blue-2);
+  border-radius:5px;
+  color: white;
+}

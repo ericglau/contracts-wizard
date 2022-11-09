@@ -21,5 +21,7 @@
       </HelpTooltip>
     </label>
   </div>
+
+  <div class="learn-button"><b>&#9432;</b>&nbsp;&nbsp;Explore security features</div>
 </section>
 
