@@ -51,6 +51,7 @@
       if (opts) {
         try {
           contract = buildGeneric(opts);
+          console.log(JSON.stringify(opts, null, 2));
           errors[tab] = undefined;
         } catch (e: unknown) {
           if (e instanceof OptionsError) {
@@ -223,6 +224,10 @@
           <DownloadIcon />
           Download
         </button>
+
+        <a href="http://localhost:8080/preselect?opts={encodeURIComponent(JSON.stringify(opts))}" target="_blank" rel="noopener noreferrer">
+        Open in custom UI
+        </a>
 
         <button class="download-option" on:click={downloadNpmHandler}>
           <FileIcon />
