@@ -11,8 +11,6 @@
 </script>
 
 <section class="controls-section">
-  <h1>Settings</h1>
-
     <div class="grid grid-cols-[2fr,1fr] gap-2">
       <label class="labeled-input">
         <span>Name</span>
