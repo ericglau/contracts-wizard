@@ -3,7 +3,7 @@
 
     import hljs from './highlightjs';
 
-    import ERC20Controls from './ERC20Controls.svelte';
+    import MiniControls from './MiniControls.svelte';
     import ERC721Controls from './ERC721Controls.svelte';
     import ERC1155Controls from './ERC1155Controls.svelte';
     import GovernorControls from './GovernorControls.svelte';
@@ -277,7 +277,7 @@
   <div class="flex flex-row gap-4 grow">
     <div class="controls w-64 flex flex-col shrink-0 justify-between h-[calc(100vh-84px)] overflow-auto">
       <div class:hidden={tab !== 'ERC20'}>
-        <ERC20Controls bind:opts={allOpts.ERC20} />
+        <MiniControls bind:opts={allOpts.ERC20} />
       </div>
       <div class:hidden={tab !== 'ERC721'}>
         <ERC721Controls bind:opts={allOpts.ERC721} />
