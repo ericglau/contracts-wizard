@@ -87,7 +87,73 @@ export default [
   },
   {
     preserveEntrySignatures: false,
-    input: 'src/main.ts',
+    input: 'src/mini.ts',
+    output: {
+      sourcemap: true,
+      format: 'es',
+      dir: 'public/build',
+      chunkFileNames: '[name].js',
+      assetFileNames: '[name][extname]',
+    },
+    plugins: [
+      // Generate openzeppelin-contracts.js data file
+      onStartRun(...'yarn --cwd ../core prepare'.split(' ')),
+
+      svelte(await import('./svelte.config.js')),
+
+      styles({
+        mode: ['extract', 'bundle.css'],
+        sourceMap: true,
+      }),
+
+      alias({
+        entries: {
+          path: 'path-browserify',
+          'highlight.js/lib/languages/python': '../../node_modules/highlight.js/lib/languages/python.js',
+        },
+      }),
+
+      resolve({
+        browser: true,
+        dedupe: ['svelte'],
+        mainFields: ['ts:main', 'module', 'main'],
+        preferBuiltins: false,
+      }),
+
+      replace({
+        preventAssignment: true,
+        include: '../../**/node_modules/**/*',
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        'process.env.NODE_DEBUG': JSON.stringify(process.env.NODE_DEBUG),
+      }),
+
+      json(),
+
+      commonjs(),
+
+      typescript({
+        include: ['src/**/*.ts', '../core/src/**/*.ts', '../core-cairo/src/**/*.ts'],
+        sourceMap: true,
+        inlineSources: true,
+      }),
+
+      // In dev mode, call `npm run start` once
+      // the bundle has been generated
+      !production && serve(),
+
+      livereloader,
+
+      // If we're building for production (npm run build
+      // instead of npm run dev), minify
+      production && terser(),
+    ],
+    watch: {
+      clearScreen: false,
+    },
+  },
+  {
+    preserveEntrySignatures: false,
+    input: 'src/mini.ts',
     output: {
       sourcemap: true,
       format: 'es',
