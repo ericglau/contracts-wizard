@@ -1,11 +1,10 @@
 import type { Contract } from './contract';
-import { printContract } from './print';
 import { reachable } from './utils/transitive-closure';
 
 import contracts from '../openzeppelin-contracts';
 import { withHelpers } from './options';
 
-export function withImports(c: Contract): Record<string, string> {
+export function getImports(c: Contract): Record<string, string> {
   const { transformImport } = withHelpers(c);
 
   const result: Record<string, string> = {};
@@ -18,10 +17,6 @@ export function withImports(c: Contract): Record<string, string> {
   };
 
   const allImports = reachable(dependencies, fileName);
-
-  const mainContract = printContract(c);
-
-  result[fileName] = mainContract;
 
   for (const importPath of allImports) {
     const source = contracts.sources[importPath];

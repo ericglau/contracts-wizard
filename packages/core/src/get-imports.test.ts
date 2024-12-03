@@ -1,6 +1,6 @@
 import test from 'ava';
 
-import { withImports } from './with-imports';
+import { getImports } from './get-imports';
 import { buildERC20 } from './erc20';
 import { buildERC721 } from './erc721';
 import { generateSources } from './generate/sources';
@@ -8,7 +8,7 @@ import { buildGeneric } from './build-generic';
 
 test('erc20 basic', t => {
   const c = buildERC20({ name: 'MyToken', symbol: 'MTK', permit: false });
-  const sources: Record<string, string> = withImports(c);
+  const sources: Record<string, string> = getImports(c);
   const files = Object.keys(sources).sort();
 
   t.deepEqual(files, [
@@ -17,13 +17,12 @@ test('erc20 basic', t => {
     '@openzeppelin/contracts/token/ERC20/IERC20.sol',
     '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol',
     '@openzeppelin/contracts/utils/Context.sol',
-    'MyToken.sol',
   ]);
 });
 
 test('erc721 auto increment', t => {
   const c = buildERC721({ name: 'MyToken', symbol: 'MTK', mintable: true, incremental: true });
-  const sources: Record<string, string> = withImports(c);
+  const sources: Record<string, string> = getImports(c);
   const files = Object.keys(sources).sort();
 
   t.deepEqual(files, [
@@ -42,13 +41,12 @@ test('erc721 auto increment', t => {
     '@openzeppelin/contracts/utils/math/Math.sol',
     '@openzeppelin/contracts/utils/math/SafeCast.sol',
     '@openzeppelin/contracts/utils/math/SignedMath.sol',
-    'MyToken.sol',
   ]);
 });
 
 test('erc721 auto increment uups', t => {
   const c = buildERC721({ name: 'MyToken', symbol: 'MTK', mintable: true, incremental: true, upgradeable: 'uups' });
-  const sources: Record<string, string> = withImports(c);
+  const sources: Record<string, string> = getImports(c);
   const files = Object.keys(sources).sort();
 
   t.deepEqual(files, [
@@ -76,14 +74,13 @@ test('erc721 auto increment uups', t => {
     '@openzeppelin/contracts/utils/math/Math.sol',
     '@openzeppelin/contracts/utils/math/SafeCast.sol',
     '@openzeppelin/contracts/utils/math/SignedMath.sol',
-    'MyToken.sol',
   ]);
 });
 
 test('can get imports for all combinations', t => {
   for (const { options } of generateSources('all')) {
     const c = buildGeneric(options);
-    withImports(c);
+    getImports(c);
   }
   t.pass();
 });
