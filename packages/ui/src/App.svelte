@@ -87,6 +87,16 @@
     $: code = printContract(contract);
     $: highlightedCode = injectHyperlinks(hljs.highlight('solidity', code).value);
 
+    const getImportsModule = import('@openzeppelin/wizard/get-imports');
+
+    const withImportsHandler = async () => {
+      const { getImports } = await getImportsModule;
+      const sources = getImports(contract);
+      sources[contract.name] = code;
+      console.log(sources);
+      return sources;
+    };
+
     const language = 'solidity';
 
     let copied = false;
@@ -205,12 +215,10 @@
     </div>
 
     <div class="action flex flex-row gap-2 shrink-0">
-      <a href="https://docs.openzeppelin.com/defender/v2/tutorial/deploy?utm_campaign=Defender%20GA_2024&utm_source=Wizard#environment_setup" target="_blank" rel="noopener noreferrer">
-        <button class="action-button min-w-[165px]">
-          <OzIcon />
-          Deploy with Defender
-        </button>
-      </a>
+      <button class="action-button min-w-[165px]" on:click={withImportsHandler}>
+        <OzIcon />
+        Deploy with Defender
+      </button>
 
       <button class="action-button min-w-[165px]" on:click={copyHandler}>
         {#if copied}
