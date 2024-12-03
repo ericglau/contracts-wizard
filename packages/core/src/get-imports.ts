@@ -4,6 +4,14 @@ import { reachable } from './utils/transitive-closure';
 import contracts from '../openzeppelin-contracts';
 import { withHelpers } from './options';
 
+/**
+ * Gets the source code for all imports of a contract, including all transitive dependencies.
+ *
+ * Does not include the contract itself (use `printContract` for that if needed).
+ *
+ * @param c The contract to get imports for.
+ * @returns A record of import paths to source code.
+ */
 export function getImports(c: Contract): Record<string, string> {
   const { transformImport } = withHelpers(c);
 
