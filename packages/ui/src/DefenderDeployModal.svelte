@@ -24,7 +24,7 @@
 {#if isOpen}
   <div 
     class="fixed right-3.5 rounded-r-3xl h-[calc(100vh-84px)] w-[360px] bg-white z-20"
-    transition:fly={{x: 380, duration: 450 }}
+    transition:fly|global={{x: 380, duration: 450 }}
   >
     <div class="p-2 h-full flex flex-col">
       {#if !loaded}
