@@ -1,7 +1,7 @@
 /**
  * The actual latest version to use in links.
  */
-export const contractsVersion = '1.0.0';
+export const contractsVersion = '1.1.0-alpha.0';
 export const contractsVersionTag = `v${contractsVersion}`;
 
 /**
@@ -14,4 +14,4 @@ export const scarbVersion = '2.9.4';
 /**
  * Semantic version string representing of the minimum compatible version of Contracts to display in output.
  */
-export const compatibleContractsSemver = '^1.0.0';
+export const compatibleContractsSemver = '^1.1.0-alpha.0';
