@@ -1,7 +1,7 @@
 <script lang="ts">
   import HelpTooltip from '../common/HelpTooltip.svelte';
-  import type { KindedOptions, OptionsErrorMessages } from '@openzeppelin/wizard-cairo';
-  import { account, Account, infoDefaults } from '@openzeppelin/wizard-cairo';
+  import type { KindedOptions, OptionsErrorMessages } from '@openzeppelin/wizard-cairo-next';
+  import { account, Account, infoDefaults } from '@openzeppelin/wizard-cairo-next';
   import UpgradeabilityField from './UpgradeabilityField.svelte';
   import InfoSection from './InfoSection.svelte';
   import { error } from '../common/error-tooltip';

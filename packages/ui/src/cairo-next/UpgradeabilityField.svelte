@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Upgradeable } from '@openzeppelin/wizard-cairo';
+  import type { Upgradeable } from '@openzeppelin/wizard-cairo-next';
 
   import HelpTooltip from '../common/HelpTooltip.svelte';
 

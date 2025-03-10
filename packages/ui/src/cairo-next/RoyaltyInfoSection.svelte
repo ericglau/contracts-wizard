@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { OptionsErrorMessages } from '@openzeppelin/wizard-cairo';
-  import type { RoyaltyInfoOptions } from '@openzeppelin/wizard-cairo/src';
+  import type { OptionsErrorMessages } from '@openzeppelin/wizard-cairo-next';
+  import type { RoyaltyInfoOptions } from '@openzeppelin/wizard-cairo-next/src';
   import HelpTooltip from '../common/HelpTooltip.svelte';
-  import { royaltyInfoDefaults } from '@openzeppelin/wizard-cairo';
+  import { royaltyInfoDefaults } from '@openzeppelin/wizard-cairo-next';
   import { error } from '../common/error-tooltip';
 
   export let opts: RoyaltyInfoOptions = royaltyInfoDefaults;
