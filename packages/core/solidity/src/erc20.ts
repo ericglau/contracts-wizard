@@ -188,7 +188,7 @@ function addPremint(
       if (crossChainBridging) {
         if (premintChainId === '') {
           throw new OptionsError({
-            premintChainId: 'Chain ID is required when using Premint with Cross-Chain Bridging',
+            premintChainId: 'Chain ID is required when using Premint with Crosschain Bridging',
           });
         }
 
@@ -275,7 +275,7 @@ function addCrossChainBridging(
 
   if (upgradeable) {
     throw new OptionsError({
-      crossChainBridging: 'Upgradeability is not currently supported with Cross-Chain Bridging',
+      crossChainBridging: 'Upgradeability is not currently supported with Crosschain Bridging',
     });
   }
 

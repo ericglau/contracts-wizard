@@ -155,7 +155,7 @@ test('erc20 crossChainBridging custom, upgradeable not allowed', async t => {
   );
   t.is(
     (error as OptionsError).messages.crossChainBridging,
-    'Upgradeability is not currently supported with Cross-Chain Bridging',
+    'Upgradeability is not currently supported with Crosschain Bridging',
   );
 });
 
@@ -170,7 +170,7 @@ test('erc20 crossChainBridging superchain, upgradeable not allowed', async t => 
   );
   t.is(
     (error as OptionsError).messages.crossChainBridging,
-    'Upgradeability is not currently supported with Cross-Chain Bridging',
+    'Upgradeability is not currently supported with Crosschain Bridging',
   );
 });
 
@@ -185,7 +185,7 @@ test('erc20 crossChainBridging superchain, premintChainId required', async t => 
   );
   t.is(
     (error as OptionsError).messages.premintChainId,
-    'Chain ID is required when using Premint with Cross-Chain Bridging',
+    'Chain ID is required when using Premint with Crosschain Bridging',
   );
 });
 
