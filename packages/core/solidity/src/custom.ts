@@ -1,14 +1,14 @@
 import type { Contract } from './contract';
 import { ContractBuilder } from './contract';
-import type { CommonOptions } from './common-options';
-import { withCommonDefaults, defaults as commonDefaults } from './common-options';
+import type { CommonContractOptions } from './common-options';
+import { withCommonContractDefaults, contractDefaults as commonDefaults } from './common-options';
 import { setUpgradeable } from './set-upgradeable';
 import { setInfo } from './set-info';
 import { setAccessControl } from './set-access-control';
 import { addPausable } from './add-pausable';
 import { printContract } from './print';
 
-export interface CustomOptions extends CommonOptions {
+export interface CustomOptions extends CommonContractOptions {
   name: string;
   pausable?: boolean;
 }
@@ -24,7 +24,7 @@ export const defaults: Required<CustomOptions> = {
 function withDefaults(opts: CustomOptions): Required<CustomOptions> {
   return {
     ...opts,
-    ...withCommonDefaults(opts),
+    ...withCommonContractDefaults(opts),
     pausable: opts.pausable ?? defaults.pausable,
   };
 }

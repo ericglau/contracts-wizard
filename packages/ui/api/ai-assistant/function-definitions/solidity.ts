@@ -231,11 +231,6 @@ export const solidityAccountAIFunctionDefinition = {
         enum: [false],
         description: 'Upgradeability is not yet available for features that use @openzeppelin/community-contracts',
       },
-      access: {
-        type: 'boolean',
-        enum: [false],
-        description: 'Access control is not available for an account contract. It always authorizes itself.',
-      },
     },
     required: ['name'],
     additionalProperties: false,

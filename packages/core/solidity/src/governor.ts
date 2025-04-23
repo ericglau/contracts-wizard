@@ -1,6 +1,6 @@
 import { supportsInterface } from './common-functions';
-import type { CommonOptions } from './common-options';
-import { withCommonDefaults, defaults as commonDefaults } from './common-options';
+import type { CommonContractOptions } from './common-options';
+import { withCommonContractDefaults, contractDefaults as commonDefaults } from './common-options';
 import type { Contract } from './contract';
 import { ContractBuilder } from './contract';
 import { OptionsError } from './error';
@@ -44,7 +44,7 @@ export function printGovernor(opts: GovernorOptions = defaults): string {
   return printContract(buildGovernor(opts));
 }
 
-export interface GovernorOptions extends CommonOptions {
+export interface GovernorOptions extends CommonContractOptions {
   name: string;
   delay: string;
   period: string;
@@ -68,7 +68,7 @@ export function isAccessControlRequired(opts: Partial<GovernorOptions>): boolean
 function withDefaults(opts: GovernorOptions): Required<GovernorOptions> {
   return {
     ...opts,
-    ...withCommonDefaults(opts),
+    ...withCommonContractDefaults(opts),
     decimals: opts.decimals ?? defaults.decimals,
     blockTime: opts.blockTime || defaults.blockTime,
     quorumPercent: opts.quorumPercent ?? defaults.quorumPercent,

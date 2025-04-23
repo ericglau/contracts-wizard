@@ -5,13 +5,13 @@ import { setAccessControl, requireAccessControl } from './set-access-control';
 import { addPauseFunctions } from './add-pausable';
 import { supportsInterface } from './common-functions';
 import { defineFunctions } from './utils/define-functions';
-import type { CommonOptions } from './common-options';
-import { withCommonDefaults, defaults as commonDefaults } from './common-options';
+import type { CommonContractOptions } from './common-options';
+import { withCommonContractDefaults, contractDefaults as commonDefaults } from './common-options';
 import { setUpgradeable } from './set-upgradeable';
 import { setInfo } from './set-info';
 import { printContract } from './print';
 
-export interface ERC1155Options extends CommonOptions {
+export interface ERC1155Options extends CommonContractOptions {
   name: string;
   uri: string;
   burnable?: boolean;
@@ -37,7 +37,7 @@ export const defaults: Required<ERC1155Options> = {
 function withDefaults(opts: ERC1155Options): Required<ERC1155Options> {
   return {
     ...opts,
-    ...withCommonDefaults(opts),
+    ...withCommonContractDefaults(opts),
     burnable: opts.burnable ?? defaults.burnable,
     pausable: opts.pausable ?? defaults.pausable,
     mintable: opts.mintable ?? defaults.mintable,

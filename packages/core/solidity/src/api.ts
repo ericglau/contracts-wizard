@@ -1,4 +1,4 @@
-import type { CommonOptions } from './common-options';
+import type { CommonOptions, CommonContractOptions } from './common-options';
 import type { ERC20Options } from './erc20';
 import {
   printERC20,
@@ -50,7 +50,7 @@ export interface WizardContractAPI<Options extends CommonOptions> {
   defaults: Required<Options>;
 }
 
-export interface AccessControlAPI<Options extends CommonOptions> {
+export interface AccessControlAPI<Options extends CommonContractOptions> {
   /**
    * Whether any of the provided options require access control to be enabled. If this returns `true`, then calling `print` with the
    * same options would cause the `access` option to default to `'ownable'` if it was `undefined` or `false`.

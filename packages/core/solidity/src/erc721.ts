@@ -5,15 +5,15 @@ import { setAccessControl, requireAccessControl } from './set-access-control';
 import { addPauseFunctions } from './add-pausable';
 import { supportsInterface } from './common-functions';
 import { defineFunctions } from './utils/define-functions';
-import type { CommonOptions } from './common-options';
-import { withCommonDefaults, defaults as commonDefaults } from './common-options';
+import type { CommonContractOptions } from './common-options';
+import { withCommonContractDefaults, contractDefaults as commonDefaults } from './common-options';
 import { setUpgradeable } from './set-upgradeable';
 import { setInfo } from './set-info';
 import { printContract } from './print';
 import type { ClockMode } from './set-clock-mode';
 import { clockModeDefault, setClockMode } from './set-clock-mode';
 
-export interface ERC721Options extends CommonOptions {
+export interface ERC721Options extends CommonContractOptions {
   name: string;
   symbol: string;
   baseUri?: string;
@@ -49,7 +49,7 @@ export const defaults: Required<ERC721Options> = {
 function withDefaults(opts: ERC721Options): Required<ERC721Options> {
   return {
     ...opts,
-    ...withCommonDefaults(opts),
+    ...withCommonContractDefaults(opts),
     baseUri: opts.baseUri ?? defaults.baseUri,
     enumerable: opts.enumerable ?? defaults.enumerable,
     uriStorage: opts.uriStorage ?? defaults.uriStorage,

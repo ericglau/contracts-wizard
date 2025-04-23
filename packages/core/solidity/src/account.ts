@@ -54,7 +54,6 @@ export function buildAccount(opts: AccountOptions): Contract {
   const allOpts = withDefaults(opts);
 
   allOpts.upgradeable = false; // Upgradeability is not yet available for the community contracts
-  allOpts.access = false; // Access control options are not used for Account
 
   const c = new ContractBuilder(allOpts.name);
 

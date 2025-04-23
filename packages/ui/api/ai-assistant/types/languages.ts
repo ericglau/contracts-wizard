@@ -1,12 +1,12 @@
 import type { KindedOptions as SolidityKindedOptions } from '../../../../core/solidity/dist';
-export type { CommonOptions as SolidityCommonOptions } from '../../../../core/solidity/dist/common-options';
+export type { CommonContractOptions as SolidityCommonOptions } from '../../../../core/solidity/dist/common-options';
 
 // Add supported language here
 export type LanguagesContractsOptions = {
   solidity: Omit<SolidityKindedOptions, 'Stablecoin' | 'RealWorldAsset' | 'Account'> & {
     Stablecoin: Omit<SolidityKindedOptions['Stablecoin'], 'upgradeable'> & { upgradeable?: false };
     RealWorldAsset: Omit<SolidityKindedOptions['RealWorldAsset'], 'upgradeable'> & { upgradeable?: false };
-    Account: Omit<SolidityKindedOptions['Account'], 'upgradeable' | 'access'> & { upgradeable?: false; access?: false };
+    Account: Omit<SolidityKindedOptions['Account'], 'upgradeable'> & { upgradeable?: false };
   };
 };
 

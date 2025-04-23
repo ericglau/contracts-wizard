@@ -3,8 +3,8 @@ import type { Access } from './set-access-control';
 import { setAccessControl, requireAccessControl } from './set-access-control';
 import { addPauseFunctions } from './add-pausable';
 import { defineFunctions } from './utils/define-functions';
-import type { CommonOptions } from './common-options';
-import { withCommonDefaults, defaults as commonDefaults } from './common-options';
+import type { CommonContractOptions } from './common-options';
+import { withCommonContractDefaults, contractDefaults as commonDefaults } from './common-options';
 import type { Upgradeable } from './set-upgradeable';
 import { setUpgradeable } from './set-upgradeable';
 import { setInfo } from './set-info';
@@ -18,7 +18,7 @@ import { toUint256, UINT256_MAX } from './utils/convert-strings';
 export const crossChainBridgingOptions = [false, 'custom', 'superchain'] as const;
 export type CrossChainBridging = (typeof crossChainBridgingOptions)[number];
 
-export interface ERC20Options extends CommonOptions {
+export interface ERC20Options extends CommonContractOptions {
   name: string;
   symbol: string;
   burnable?: boolean;
@@ -58,7 +58,7 @@ export const defaults: Required<ERC20Options> = {
 export function withDefaults(opts: ERC20Options): Required<ERC20Options> {
   return {
     ...opts,
-    ...withCommonDefaults(opts),
+    ...withCommonContractDefaults(opts),
     burnable: opts.burnable ?? defaults.burnable,
     pausable: opts.pausable ?? defaults.pausable,
     premint: opts.premint || defaults.premint,
