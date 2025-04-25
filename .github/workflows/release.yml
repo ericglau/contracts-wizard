@@ -21,9 +21,12 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Create PR
         uses: changesets/action@v1
+        with:
+          title: Update Versions for Release
+          commit: Update Versions for Release
+          version: npm run version
+          publish: yarn release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          version: npm run version
-          title: Update versions for publishing
-          commit: Update versions for publishing
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  

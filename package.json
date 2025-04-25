@@ -12,7 +12,8 @@
     "dev:api": "yarn --cwd ./packages/ui dev:api",
     "dev": "concurrently --kill-others-on-fail --names \"UI,API\" --prefix-colors \"magenta.bold,green.bold\" \"yarn dev:ui\" \"yarn dev:api\"",
     "run:core": "node ./scripts/run-command.mjs",
-    "version": "bash scripts/release/version.sh"
+    "version": "bash scripts/release/version.sh",
+    "publish": "bash scripts/release/publish.sh"
   },
   "workspaces": {
     "packages": [
