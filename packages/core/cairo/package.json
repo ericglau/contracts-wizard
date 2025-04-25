@@ -20,7 +20,7 @@
     "test": "ava",
     "test:update-snapshots": "ava --update-snapshots",
     "test:watch": "ava --watch",
-    "version": "node ../../../scripts/bump-changelog.js"
+    "version": "node ../../../scripts/release/format-changelog.js"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
