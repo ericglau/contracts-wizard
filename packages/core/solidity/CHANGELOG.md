@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 0.5.6 (2025-04-25)
+
+- foo123
+
 ## 0.5.5 (2025-04-25)
 
 - Add `account` contract types for ERC-4337. ([#486](https://github.com/OpenZeppelin/contracts-wizard/pull/486))
