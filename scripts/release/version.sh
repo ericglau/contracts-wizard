@@ -4,4 +4,4 @@ set -euo pipefail
 
 changeset version
 
-node scripts/release/format-changelog.js
+node scripts/release/format-changelog.mjs
