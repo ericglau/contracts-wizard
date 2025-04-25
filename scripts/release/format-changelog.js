@@ -4,10 +4,11 @@
 // This is run automatically when npm version is run.
 
 const fs = require('fs');
-const { getSupportedLanguageInCoreSubfolder } = require('./language-input.mjs');
+const path = require('path');
+const { getSupportedLanguageInCoreSubfolder } = require('../language-input.mjs');
 
 function formatChangelog(dir) {
-  const changelogPath = fs.join(dir, 'CHANGELOG.md');
+  const changelogPath = path.join(dir, 'CHANGELOG.md');
 
   const changelog = fs.readFileSync(changelogPath, 'utf8');
 
@@ -37,5 +38,6 @@ function formatChangelog(dir) {
 const languageFolders = getSupportedLanguageInCoreSubfolder();
 for (const languageFolder of languageFolders) {
   console.log(`Formatting changelog for ${languageFolder}...`);
-  formatChangelog(languageFolder);
+  const languageFolderPath = path.join('./packages/core', languageFolder);
+  formatChangelog(languageFolderPath);
 }
