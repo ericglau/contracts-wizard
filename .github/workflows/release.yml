@@ -25,3 +25,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           version: npm run version
+          title: Update versions for publishing
+          commit: Update versions for publishing
