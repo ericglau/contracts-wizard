@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.5.7 (2025-04-25)
+
+- testing abc ([#13](https://github.com/ericglau/contracts-wizard/pull/13))
+- testing testing
+
 ## 0.5.6 (2025-04-25)
 
 - foo123
