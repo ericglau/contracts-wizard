@@ -4,4 +4,4 @@ set -euo pipefail
 
 changeset version
 
-yarn version
+scripts/release/format-changelog.js
