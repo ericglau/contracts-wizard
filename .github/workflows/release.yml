@@ -9,7 +9,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   changesets:
-    name: Run changesets
+    name: Update Release PR or Publish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,8 +20,8 @@ jobs:
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
-          title: Prepare Packages for Release
-          commit: Prepare Packages for Release
+          title: Release Packages
+          commit: Release Packages
           version: npm run version
           publish: npm run publish
         env:
