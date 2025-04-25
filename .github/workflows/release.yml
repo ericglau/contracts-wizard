@@ -25,7 +25,7 @@ jobs:
           title: Update Versions for Release
           commit: Update Versions for Release
           version: npm run version
-          publish: yarn release
+          publish: changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
