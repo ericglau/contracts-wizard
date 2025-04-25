@@ -1,6 +1,7 @@
 {
   "name": "root",
   "private": true,
+  "type": "module",
   "scripts": {
     "prepare": "wsrun -m prepare",
     "lint": "eslint",

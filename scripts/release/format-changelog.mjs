@@ -3,14 +3,14 @@
 // Adjusts the format of the changelog that changesets generates.
 // This is run automatically when npm version is run.
 
-const fs = require('fs');
-const path = require('path');
-const { getSupportedLanguageInCoreSubfolder } = require('../language-input.mjs');
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { getSupportedLanguageInCoreSubfolder } from '../language-input.mjs';
 
 function formatChangelog(dir) {
-  const changelogPath = path.join(dir, 'CHANGELOG.md');
+  const changelogPath = join(dir, 'CHANGELOG.md');
 
-  const changelog = fs.readFileSync(changelogPath, 'utf8');
+  const changelog = readFileSync(changelogPath, 'utf8');
 
   // Groups:
   //  - 1: Pull Request Number and URL
@@ -32,12 +32,12 @@ function formatChangelog(dir) {
     // Add date to new version
     .replace(VERSION_TITLE_REGEX, `\n## $1 (${new Date().toISOString().split('T')[0]})`);
 
-  fs.writeFileSync(changelogPath, formatted);
+  writeFileSync(changelogPath, formatted);
 }
 
 const languageFolders = getSupportedLanguageInCoreSubfolder();
 for (const languageFolder of languageFolders) {
   console.log(`Formatting changelog for ${languageFolder}...`);
-  const languageFolderPath = path.join('./packages/core', languageFolder);
+  const languageFolderPath = join('./packages/core', languageFolder);
   formatChangelog(languageFolderPath);
 }
