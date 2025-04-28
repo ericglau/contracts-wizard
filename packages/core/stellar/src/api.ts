@@ -14,6 +14,8 @@ export interface WizardContractAPI<Options extends CommonContractOptions> {
   defaults: Required<Options>;
 }
 
+//test
+
 export interface AccessControlAPI<Options extends CommonContractOptions> {
   /**
    * Whether any of the provided options require access control to be enabled. If this returns `true`, then calling `print` with the
