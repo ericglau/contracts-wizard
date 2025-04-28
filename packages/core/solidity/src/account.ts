@@ -17,6 +17,8 @@ export const defaults: Required<AccountOptions> = {
   ERC7579Modules: false,
 } as const;
 
+// test something
+
 export const SignatureValidationOptions = [false, 'ERC1271', 'ERC7739'] as const;
 export type SignatureValidationOptions = (typeof SignatureValidationOptions)[number];
 
