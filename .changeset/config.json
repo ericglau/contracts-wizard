@@ -13,7 +13,6 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@ericglau/wizard-stellar",
     "@ericglau/wizard-cairo-alpha",
     "ui"
   ]
