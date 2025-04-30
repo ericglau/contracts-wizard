@@ -1,6 +1,10 @@
 # Changelog
 
 
+## 0.5.9 (2025-04-30)
+
+- test abc ([#19](https://github.com/ericglau/contracts-wizard/pull/19))
+
 ## 0.5.7 (2025-04-25)
 
 - testing abc ([#13](https://github.com/ericglau/contracts-wizard/pull/13))
