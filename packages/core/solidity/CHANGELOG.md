@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.5.11
+2025-04-30
+
+- test getting changelog entry without date
+
 ## 0.5.9 (2025-04-30)
 
 - test abc ([#19](https://github.com/ericglau/contracts-wizard/pull/19))
