@@ -5,7 +5,9 @@ on:
     branches:
       - master
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: version-or-publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   version:
