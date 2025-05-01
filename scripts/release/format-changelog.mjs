@@ -30,7 +30,7 @@ function formatChangelog(dir) {
     // Format each release line
     .replace(RELEASE_LINE_REGEX, (_, pr, entry) => (pr ? `- ${entry} (${pr})` : `- ${entry}`))
     // Add date to new version
-    .replace(VERSION_TITLE_REGEX, `\n## $1\n${new Date().toISOString().split('T')[0]}`);
+    .replace(VERSION_TITLE_REGEX, `\n## $1 (${new Date().toISOString().split('T')[0]})`);
 
   writeFileSync(changelogPath, formatted);
 }
