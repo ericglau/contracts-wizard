@@ -15,7 +15,7 @@ import { formatLines, spaceBetween } from './utils/format-lines';
 import { mapValues } from './utils/map-values';
 import SOLIDITY_VERSION from './solidity-version.json';
 import { inferTranspiled } from './infer-transpiled';
-import { compatibleContractsSemver } from './utils/version'; //test abc 0.5.10
+import { compatibleContractsSemver } from './utils/version'; //test abc 0.5.12
 
 export function printContract(contract: Contract, opts?: Options): string {
   const helpers = withHelpers(contract, opts);
