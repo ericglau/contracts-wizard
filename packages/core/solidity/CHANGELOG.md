@@ -1,7 +1,15 @@
 # Changelog
 
 
+## 0.5.12
+2025-05-01
+
+- bump for 0.5.12
+
+
 ## 0.5.11
+2025-05-01
+
 2025-04-30
 
 - test getting changelog entry without date
