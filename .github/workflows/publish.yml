@@ -2,18 +2,26 @@ name: Publish
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch to publish from'
+        required: true
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   publish:
     name: Publish Packages
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     environment: publish
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # To get all tags
+          ref: ${{ github.event.inputs.ref }}
       - name: Set up environment
         uses: ./.github/actions/setup
       - name: Create Version Packages PR or Publish
