@@ -4,7 +4,7 @@
 
 Interactively build a contract out of components from OpenZeppelin Contracts. Provide parameters and desired features for the kind of contract that you want, and the Wizard will generate all of the code necessary. The resulting code is ready to be compiled and deployed, or it can serve as a starting point and customized further with application specific logic.
 
-This package provides a programmatic API. For a web interface, see https://wizard.openzeppelin.com
+This package provides a programmatic API. For a web interface, see https://wizard.openzeppelin.com 
 
 ### Installation
 
