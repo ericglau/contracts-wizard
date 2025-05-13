@@ -2,4 +2,4 @@
 '@ericglau/wizard-test': patch
 ---
 
-test new
+test new 
