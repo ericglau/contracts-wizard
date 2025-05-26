@@ -1,0 +1,33 @@
+{
+  "name": "@ericglau/wizard-mcp",
+  "version": "0.0.1-alpha.5",
+  "description": "MCP Server for OpenZeppelin Contracts Wizard",
+  "license": "AGPL-3.0-only",
+  "repository": "https://github.com/ericglau/contracts-wizard",
+  "main": "dist/index.js",
+  "bin": {
+    "wizard-mcp": "dist/index.js"
+  },
+  "ts:main": "src/index.ts",
+  "files": [
+    "LICENSE",
+    "NOTICE",
+    "/dist",
+    "/src",
+    "!**/*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.1",
+    "@openzeppelin/wizard": "^0.5.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
