@@ -1,17 +1,19 @@
 # Changelog
 
 
+## 0.5.16 (2025-05-26)
+
+- test new
+
 ## 0.5.14 (2025-05-01)
 
 - 0.5.14 test ([#25](https://github.com/ericglau/contracts-wizard/pull/25))
-
 
 ## 0.5.13 (2025-05-01)
 
 2025-05-01
 
 - add new thing for 0.5.13 before 0.5.12 is released
-
 
 ## 0.5.12 (2025-05-01)
 
@@ -20,7 +22,6 @@
 2025-05-01
 
 - bump for 0.5.12
-
 
 ## 0.5.11 (2025-05-01)
 
