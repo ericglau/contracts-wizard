@@ -155,6 +155,33 @@
 						"command"
 					]
 				}
+			},
+			{
+				"name": "chat-tools-sample_solidityERC20",
+				"tags": [
+					"terminal",
+					"chat-tools-sample"
+				],
+				"displayName": "Generate ERC20 contract",
+				"modelDescription": "Generate a Solidity ERC20 contract",
+				"canBeReferencedInPrompt": false,
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"name": {
+							"type": "string",
+							"description": "The name of the ERC20 token"
+						},
+						"symbol": {
+							"type": "string",
+							"description": "The symbol of the ERC20 token"
+						}
+					},
+					"required": [
+						"name",
+						"symbol"
+					]
+				}
 			}
 		],
 		"commands": [

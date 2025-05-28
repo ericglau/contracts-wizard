@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
+import { erc20, KindedOptions } from '@openzeppelin/wizard';
 
 export function registerChatTools(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_tabCount', new TabCountTool()));
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_findFiles', new FindFilesTool()));
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_runInTerminal', new RunInTerminalTool()));
+
+	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_solidityERC20', new SolidityERC20Tool()));
 }
 
 interface ITabCountParameters {
@@ -81,6 +84,29 @@ export class FindFilesTool implements vscode.LanguageModelTool<IFindFilesParamet
 	) {
 		return {
 			invocationMessage: `Searching workspace for "${options.input.pattern}"`,
+		};
+	}
+}
+
+type ISolidityERC20Parameters = KindedOptions['ERC20'];
+
+export class SolidityERC20Tool implements vscode.LanguageModelTool<ISolidityERC20Parameters> {
+	async invoke(
+		options: vscode.LanguageModelToolInvocationOptions<ISolidityERC20Parameters>,
+		_token: vscode.CancellationToken
+	) {
+		const params = options.input as ISolidityERC20Parameters;
+		const result = erc20.print(params);
+		return new vscode.LanguageModelToolResult([
+			new vscode.LanguageModelTextPart(result),
+		]);
+	}
+	async prepareInvocation(
+		_options: vscode.LanguageModelToolInvocationPrepareOptions<ISolidityERC20Parameters>,
+		_token: vscode.CancellationToken
+	) {
+		return {
+			invocationMessage: 'Preparing to invoke the Solidity ERC20 tool',
 		};
 	}
 }
