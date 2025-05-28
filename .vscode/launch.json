@@ -15,7 +15,7 @@
 			"outFiles": [
 				"${workspaceFolder}/packages/chat-sample/out/**/*.js"
 			],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "npm: compile - packages/chat-sample"
 		},
 		{
 			"name": "Extension Tests",
