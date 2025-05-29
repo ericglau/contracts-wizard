@@ -157,14 +157,17 @@
 				}
 			},
 			{
-				"name": "chat-tools-sample_solidityERC20",
+				"name": "openzeppelin-solidity-generate-erc20",
 				"tags": [
 					"terminal",
 					"chat-tools-sample"
 				],
 				"displayName": "Generate ERC20 contract",
-				"modelDescription": "Generate a Solidity ERC20 contract",
-				"canBeReferencedInPrompt": false,
+				"modelDescription": "Generate a Solidity ERC20 contract using OpenZeppelin Contracts Wizard",
+				"canBeReferencedInPrompt": true,
+				"toolReferenceName": "solidity-generate-erc20",
+				"icon": "cat.jpeg",
+				"userDescription": "Generate a Solidity ERC20 contract using OpenZeppelin Contracts Wizard",
 				"inputSchema": {
 					"type": "object",
 					"properties": {

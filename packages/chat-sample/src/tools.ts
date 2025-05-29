@@ -6,7 +6,7 @@ export function registerChatTools(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_findFiles', new FindFilesTool()));
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_runInTerminal', new RunInTerminalTool()));
 
-	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_solidityERC20', new SolidityERC20Tool()));
+	context.subscriptions.push(vscode.lm.registerTool('openzeppelin-solidity-generate-erc20', new SolidityERC20Tool()));
 }
 
 interface ITabCountParameters {
