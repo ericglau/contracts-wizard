@@ -162,8 +162,8 @@
 					"terminal",
 					"chat-tools-sample"
 				],
-				"displayName": "Generate ERC20 contract",
-				"modelDescription": "Generate a Solidity ERC20 contract using OpenZeppelin Contracts Wizard",
+				"displayName": "Generate a Solidity ERC20 contract",
+				"modelDescription": "Generates an ERC20 smart contract for Solidity, and returns the source code. Does not write to disk.",
 				"canBeReferencedInPrompt": true,
 				"toolReferenceName": "solidity-generate-erc20",
 				"icon": "cat.jpeg",
