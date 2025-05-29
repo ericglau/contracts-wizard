@@ -21,7 +21,8 @@ export function isTsxToolUserMetadata(obj: unknown): obj is TsxToolUserMetadata 
 export function registerToolUserChatParticipant(context: vscode.ExtensionContext) {
     const handler: vscode.ChatRequestHandler = async (request: vscode.ChatRequest, chatContext: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken) => {
         if (request.command === 'list') {
-            stream.markdown(`Available tools: ${vscode.lm.tools.map(tool => tool.name).join(', ')}\n\n`);
+            stream.markdown(`Available tools FROM toolParticipant.ts: ${vscode.lm.tools.map(tool => tool.name).join(', ')}\n\n`);
+            // TODO see if this lists MCP tools
             return;
         }
 
