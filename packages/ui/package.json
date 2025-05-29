@@ -8,7 +8,8 @@
     "dev": "node scripts/copy-versions.mjs && rollup -c -w",
     "dev:api": "ENV=dev deno task dev",
     "start": "sirv public",
-    "validate": "svelte-check"
+    "validate": "svelte-check",
+    "generate-json": "deno task generate-json"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.0",
