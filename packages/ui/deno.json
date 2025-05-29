@@ -13,6 +13,6 @@
   "tasks": {
     "dev": "deno run --allow-all --env-file --watch --no-clear-screen scripts/deno/development-server.ts ",
     "type:check": "deno check ./api --unstable-sloppy-imports",
-    "generate-json": "deno run --allow-write scripts/deno/function-definitions-to-json.ts"
+    "generate:json": "deno run --allow-write scripts/deno/generate-function-params.ts"
   }
 }

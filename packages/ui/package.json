@@ -9,7 +9,7 @@
     "dev:api": "ENV=dev deno task dev",
     "start": "sirv public",
     "validate": "svelte-check",
-    "generate-json": "deno task generate-json"
+    "generate:json": "deno task generate:json"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^5.0.0",
