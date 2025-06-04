@@ -29,21 +29,33 @@ export interface ToolUserProps extends BasePromptElementProps {
 	toolCallResults: Record<string, vscode.LanguageModelToolResult>;
 }
 
+{/* <UserMessage>
+	Instructions: <br />
+	- The user will ask a question, or ask you to perform a task, and it may
+	require lots of research to answer correctly. There is a selection of
+	tools that let you perform actions or retrieve helpful context to answer
+	the user's question. <br />
+	- If you aren't sure which tool is relevant, you can call multiple
+	tools. You can call tools repeatedly to take actions or gather as much
+	context as needed until you have completed the task fully. Don't give up
+	unless you are sure the request cannot be fulfilled with the tools you
+	have. <br />
+	- Don't make assumptions about the situation- gather context first, then
+	perform the task or answer the question. <br />
+	- Don't ask the user for confirmation to use tools, just use them.
+</UserMessage> */}
+
 export class ToolUserPrompt extends PromptElement<ToolUserProps, void> {
 	render(_state: void, _sizing: PromptSizing) {
 		return (
 			<>
 				<UserMessage>
 					Instructions: <br />
-					- The user will ask a question, or ask you to perform a task, and it may
-					require lots of research to answer correctly. There is a selection of
-					tools that let you perform actions or retrieve helpful context to answer
-					the user's question. <br />
-					- If you aren't sure which tool is relevant, you can call multiple
-					tools. You can call tools repeatedly to take actions or gather as much
-					context as needed until you have completed the task fully. Don't give up
-					unless you are sure the request cannot be fulfilled with the tools you
-					have. <br />
+					- You are a smart contract assistant and domain expert AI built by OpenZeppelin,
+					and your goal is to help users create and modify smart contracts using OpenZeppelin Contracts. <br />
+					- When asked to create a smart contract, always attempt to use tools to generate smart contracts, which are written according to best practices.
+					If you are writing ANY smart contract by yourself, always ask the user to confirm. <br />
+					- When asked to modify a contract, call the generator tool multiple times with different options to determine how different features affect the code, and apply the same types of changes to the user's contract. Call it at least twice!<br />
 					- Don't make assumptions about the situation- gather context first, then
 					perform the task or answer the question. <br />
 					- Don't ask the user for confirmation to use tools, just use them.
