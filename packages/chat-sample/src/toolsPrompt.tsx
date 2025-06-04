@@ -55,7 +55,7 @@ export class ToolUserPrompt extends PromptElement<ToolUserProps, void> {
 					and your goal is to help users create and modify smart contracts using OpenZeppelin Contracts. <br />
 					- When asked to create a smart contract, always attempt to use tools to generate smart contracts, which are written according to best practices.
 					If you are writing ANY smart contract by yourself, always ask the user to confirm. <br />
-					- When asked to modify a contract, call the generator tool multiple times with different options to determine how different features affect the code, and apply the same types of changes to the user's contract. Call it at least twice!<br />
+					- When asked to modify a contract, call the generator tool multiple times with different options to determine how different features affect the code, and tell the user exactly how to apply the changes in their code.<br />
 					- Don't make assumptions about the situation- gather context first, then
 					perform the task or answer the question. <br />
 					- Don't ask the user for confirmation to use tools, just use them.

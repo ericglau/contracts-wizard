@@ -39,7 +39,7 @@ export function registerToolUserChatParticipant(context: vscode.ExtensionContext
         // Use all tools, or tools with the tags that are relevant.
         const tools = request.command === 'all' ?
             vscode.lm.tools :
-            vscode.lm.tools.filter(tool => tool.tags.includes('chat-tools-sample'));
+            vscode.lm.tools.filter(tool => tool.name.includes('generate'));
         const options: vscode.LanguageModelChatRequestOptions = {
             justification: 'To make a request to @toolsTSX',
         };

@@ -6,7 +6,7 @@ export function registerChatTools(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_findFiles', new FindFilesTool()));
 	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_runInTerminal', new RunInTerminalTool()));
 
-	context.subscriptions.push(vscode.lm.registerTool('openzeppelin-solidity-generate-erc20', new SolidityERC20Tool()));
+	// context.subscriptions.push(vscode.lm.registerTool('openzeppelin-solidity-generate-erc20', new SolidityERC20Tool()));
 }
 
 interface ITabCountParameters {
@@ -88,28 +88,180 @@ export class FindFilesTool implements vscode.LanguageModelTool<IFindFilesParamet
 	}
 }
 
-type ISolidityERC20Parameters = KindedOptions['ERC20'];
+// type ISolidityERC20Parameters = KindedOptions['ERC20'];
 
-export class SolidityERC20Tool implements vscode.LanguageModelTool<ISolidityERC20Parameters> {
-	async invoke(
-		options: vscode.LanguageModelToolInvocationOptions<ISolidityERC20Parameters>,
-		_token: vscode.CancellationToken
-	) {
-		const params = options.input as ISolidityERC20Parameters;
-		const result = erc20.print(params);
-		return new vscode.LanguageModelToolResult([
-			new vscode.LanguageModelTextPart(result),
-		]);
-	}
-	async prepareInvocation(
-		_options: vscode.LanguageModelToolInvocationPrepareOptions<ISolidityERC20Parameters>,
-		_token: vscode.CancellationToken
-	) {
-		return {
-			invocationMessage: 'Preparing to invoke the Solidity ERC20 tool',
-		};
-	}
-}
+// export class SolidityERC20Tool implements vscode.LanguageModelTool<ISolidityERC20Parameters> {
+// 	async invoke(
+// 		options: vscode.LanguageModelToolInvocationOptions<ISolidityERC20Parameters>,
+// 		_token: vscode.CancellationToken
+// 	) {
+// 		const params = options.input as ISolidityERC20Parameters;
+// 		const result = erc20.print(params);
+// 		return new vscode.LanguageModelToolResult([
+// 			new vscode.LanguageModelTextPart(result),
+// 		]);
+// 	}
+// 	async prepareInvocation(
+// 		_options: vscode.LanguageModelToolInvocationPrepareOptions<ISolidityERC20Parameters>,
+// 		_token: vscode.CancellationToken
+// 	) {
+// 		return {
+// 			invocationMessage: 'Preparing to invoke the Solidity ERC20 tool',
+// 		};
+// 	}
+// }
+
+// for package.json:
+// {
+// 				"name": "openzeppelin-solidity-generate-erc20",
+// 				"tags": [
+// 					"terminal",
+// 					"chat-tools-sample"
+// 				],
+// 				"displayName": "Generate a Solidity ERC20 contract",
+// 				"modelDescription": "Generates an ERC20 smart contract for Solidity, and returns the source code. Does not write to disk.",
+// 				"canBeReferencedInPrompt": true,
+// 				"toolReferenceName": "solidity-generate-erc20",
+// 				"icon": "cat.jpeg",
+// 				"userDescription": "Generate a Solidity ERC20 contract using OpenZeppelin Contracts Wizard",
+// 				"inputSchema": {
+// 					"type": "object",
+// 					"properties": {
+// 						"name": {
+// 							"type": "string",
+// 							"description": "The name of the contract"
+// 						},
+// 						"symbol": {
+// 							"type": "string",
+// 							"description": "The short symbol for the token"
+// 						},
+// 						"burnable": {
+// 							"type": "boolean",
+// 							"description": "Whether token holders will be able to destroy their tokens"
+// 						},
+// 						"pausable": {
+// 							"type": "boolean",
+// 							"description": "Whether privileged accounts will be able to pause specifically marked functionality. Useful for emergency response."
+// 						},
+// 						"mintable": {
+// 							"type": "boolean",
+// 							"description": "Whether privileged accounts will be able to create more supply or emit more tokens"
+// 						},
+// 						"access": {
+// 							"anyOf": [
+// 								{
+// 									"type": "string",
+// 									"enum": [
+// 										"ownable",
+// 										"roles",
+// 										"managed"
+// 									]
+// 								},
+// 								{
+// 									"type": "boolean",
+// 									"enum": [
+// 										false
+// 									]
+// 								}
+// 							],
+// 							"description": "The type of access control to provision. Ownable is a simple mechanism with a single account authorized for all privileged actions. Roles is a flexible mechanism with a separate role for each privileged action. A role can have many authorized accounts. Managed enables a central contract to define a policy that allows certain callers to access certain functions."
+// 						},
+// 						"upgradeable": {
+// 							"anyOf": [
+// 								{
+// 									"type": "string",
+// 									"enum": [
+// 										"transparent",
+// 										"uups"
+// 									]
+// 								},
+// 								{
+// 									"type": "boolean",
+// 									"enum": [
+// 										false
+// 									]
+// 								}
+// 							],
+// 							"description": "Whether the smart contract is upgradeable. Transparent uses more complex proxy with higher overhead, requires less changes in your contract. Can also be used with beacons. UUPS uses simpler proxy with less overhead, requires including extra code in your contract. Allows flexibility for authorizing upgrades."
+// 						},
+// 						"info": {
+// 							"type": "object",
+// 							"description": "Metadata about the contract and author",
+// 							"properties": {
+// 								"securityContact": {
+// 									"type": "string",
+// 									"description": "Email where people can contact you to report security issues. Will only be visible if contract source code is verified."
+// 								},
+// 								"license": {
+// 									"type": "string",
+// 									"description": "The license used by the contract, default is \"MIT\""
+// 								}
+// 							}
+// 						},
+// 						"premint": {
+// 							"type": "string",
+// 							"description": "The number of tokens to premint for the deployer."
+// 						},
+// 						"permit": {
+// 							"type": "boolean",
+// 							"description": "Whether without paying gas, token holders will be able to allow third parties to transfer from their account."
+// 						},
+// 						"votes": {
+// 							"anyOf": [
+// 								{
+// 									"type": "boolean",
+// 									"enum": [
+// 										false,
+// 										true
+// 									]
+// 								},
+// 								{
+// 									"type": "string",
+// 									"enum": [
+// 										"blocknumber",
+// 										"timestamp"
+// 									]
+// 								}
+// 							],
+// 							"description": "Whether to keep track of historical balances for voting in on-chain governance. Voting durations can be expressed as block numbers or timestamps."
+// 						},
+// 						"flashmint": {
+// 							"type": "boolean",
+// 							"description": "Whether to include built-in flash loans to allow lending tokens without requiring collateral as long as they're returned in the same transaction."
+// 						},
+// 						"crossChainBridging": {
+// 							"anyOf": [
+// 								{
+// 									"type": "boolean",
+// 									"enum": [
+// 										false
+// 									]
+// 								},
+// 								{
+// 									"type": "string",
+// 									"enum": [
+// 										"custom",
+// 										"superchain"
+// 									]
+// 								}
+// 							],
+// 							"description": "Whether to allow authorized bridge contracts to mint and burn tokens for cross-chain transfers. Options are to use custom bridges on any chain, or the SuperchainERC20 standard with the predeployed SuperchainTokenBridge. Emphasize that these features are experimental, not audited and are subject to change. The SuperchainERC20 feature is only available on chains in the Superchain, and requires deploying your contract to the same address on every chain in the Superchain."
+// 						},
+// 						"premintChainId": {
+// 							"type": "string",
+// 							"description": "The chain ID of the network on which to premint tokens."
+// 						},
+// 						"callback": {
+// 							"type": "boolean",
+// 							"description": "Whether to include support for code execution after transfers and approvals on recipient contracts in a single transaction."
+// 						}
+// 					},
+// 					"required": [
+// 						"name",
+// 						"symbol"
+// 					]
+// 				}
+// 			}
 
 interface IRunInTerminalParameters {
 	command: string;
