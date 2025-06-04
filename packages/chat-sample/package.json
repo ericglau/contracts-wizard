@@ -17,6 +17,12 @@
 	],
 	"activationEvents": [],
 	"contributes": {
+		"mcpServerDefinitionProviders": [
+			{
+				"id": "openzeppelin-wizard-mcp",
+				"label": "OpenZeppelin Contracts Wizard MCP"
+			}
+		],
 		"chatParticipants": [
 			{
 				"id": "chat-tools-sample.tools",
