@@ -1,5 +1,5 @@
 {
-	"name": "chat-sample",
+	"name": "openzeppelin-vscode-wizard",
 	"publisher": "vscode-samples",
 	"displayName": "Copilot Chat Sample",
 	"description": "Sample chat extension, a trusty cat tutor that will can teach you computer science topics.",
@@ -25,10 +25,10 @@
 		],
 		"chatParticipants": [
 			{
-				"id": "chat-tools-sample.tools",
-				"fullName": "Tool User",
-				"name": "tools",
-				"description": "I use tools",
+				"id": "openzeppelin-vscode-wizard.tools",
+				"fullName": "OpenZeppelin",
+				"name": "openzeppelin",
+				"description": "Ask questions about smart contract development",
 				"isSticky": true,
 				"commands": [
 					{
@@ -44,10 +44,10 @@
 		],
 		"languageModelTools": [
 			{
-				"name": "chat-tools-sample_tabCount",
+				"name": "openzeppelin-vscode-wizard_tabCount",
 				"tags": [
 					"editors",
-					"chat-tools-sample"
+					"openzeppelin-vscode-wizard"
 				],
 				"toolReferenceName": "countTabs",
 				"displayName": "Tab Count",
@@ -66,11 +66,11 @@
 				}
 			},
 			{
-				"name": "chat-tools-sample_findFiles",
+				"name": "openzeppelin-vscode-wizard_findFiles",
 				"tags": [
 					"files",
 					"search",
-					"chat-tools-sample"
+					"openzeppelin-vscode-wizard"
 				],
 				"toolReferenceName": "findFiles",
 				"displayName": "Find Files",
@@ -90,10 +90,10 @@
 				}
 			},
 			{
-				"name": "chat-tools-sample_runInTerminal",
+				"name": "openzeppelin-vscode-wizard_runInTerminal",
 				"tags": [
 					"terminal",
-					"chat-tools-sample"
+					"openzeppelin-vscode-wizard"
 				],
 				"displayName": "Run in Terminal",
 				"modelDescription": "Run a command in a terminal and return the output",

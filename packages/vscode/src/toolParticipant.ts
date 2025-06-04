@@ -133,7 +133,7 @@ export function registerToolUserChatParticipant(context: vscode.ExtensionContext
         };
     };
 
-    const toolUser = vscode.chat.createChatParticipant('chat-tools-sample.tools', handler);
+    const toolUser = vscode.chat.createChatParticipant('openzeppelin-vscode-wizard.tools', handler);
     toolUser.iconPath = new vscode.ThemeIcon('tools');
     context.subscriptions.push(toolUser);
 }

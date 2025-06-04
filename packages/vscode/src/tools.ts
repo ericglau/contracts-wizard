@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { erc20, KindedOptions } from '@openzeppelin/wizard';
+// import { erc20, KindedOptions } from '@openzeppelin/wizard';
 
 export function registerChatTools(context: vscode.ExtensionContext) {
-	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_tabCount', new TabCountTool()));
-	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_findFiles', new FindFilesTool()));
-	context.subscriptions.push(vscode.lm.registerTool('chat-tools-sample_runInTerminal', new RunInTerminalTool()));
+	context.subscriptions.push(vscode.lm.registerTool('openzeppelin-vscode-wizard_tabCount', new TabCountTool()));
+	context.subscriptions.push(vscode.lm.registerTool('openzeppelin-vscode-wizard_findFiles', new FindFilesTool()));
+	context.subscriptions.push(vscode.lm.registerTool('openzeppelin-vscode-wizard_runInTerminal', new RunInTerminalTool()));
 
 	// context.subscriptions.push(vscode.lm.registerTool('openzeppelin-solidity-generate-erc20', new SolidityERC20Tool()));
 }
@@ -116,7 +116,7 @@ export class FindFilesTool implements vscode.LanguageModelTool<IFindFilesParamet
 // 				"name": "openzeppelin-solidity-generate-erc20",
 // 				"tags": [
 // 					"terminal",
-// 					"chat-tools-sample"
+// 					"openzeppelin-vscode-wizard"
 // 				],
 // 				"displayName": "Generate a Solidity ERC20 contract",
 // 				"modelDescription": "Generates an ERC20 smart contract for Solidity, and returns the source code. Does not write to disk.",

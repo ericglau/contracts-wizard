@@ -10,24 +10,24 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}/packages/chat-sample"
+				"--extensionDevelopmentPath=${workspaceFolder}/packages/vscode"
 			],
 			"outFiles": [
-				"${workspaceFolder}/packages/chat-sample/out/**/*.js"
+				"${workspaceFolder}/packages/vscode/out/**/*.js"
 			],
-			"preLaunchTask": "npm: compile - packages/chat-sample"
+			"preLaunchTask": "npm: compile - packages/vscode"
 		},
 		{
 			"name": "Extension Tests",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}/packages/chat-sample",
-				"--extensionTestsPath=${workspaceFolder}/packages/chat-sample/out/test/suite/index"
+				"--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+				"--extensionTestsPath=${workspaceFolder}/packages/vscode/out/test/suite/index"
 			],
 			"outFiles": [
-				"${workspaceFolder}/packages/chat-sample/out/**/*.js",
-				"${workspaceFolder}/packages/chat-sample/dist/**/*.js"
+				"${workspaceFolder}/packages/vscode/out/**/*.js",
+				"${workspaceFolder}/packages/vscode/dist/**/*.js"
 			],
 			"preLaunchTask": "tasks: watch-tests"
 		}
