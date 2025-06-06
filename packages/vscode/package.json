@@ -9,7 +9,7 @@
 	},
 	"version": "0.1.0",
 	"engines": {
-		"vscode": "^1.95.0"
+		"vscode": "^1.101.0"
 	},
 	"categories": [
 		"AI",
@@ -19,8 +19,8 @@
 	"contributes": {
 		"mcpServerDefinitionProviders": [
 			{
-				"id": "openzeppelin-wizard-mcp",
-				"label": "OpenZeppelin Contracts Wizard MCP"
+				"id": "openzeppelin-vscode-wizard.mcp",
+				"label": "openzeppelin-wizard-mcp"
 			}
 		],
 		"chatParticipants": [
@@ -118,7 +118,10 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
 		"lint": "eslint",
-		"watch": "tsc -watch -p ./"
+		"watch": "tsc -watch -p ./",
+		"download-api": "dts dev",
+		"postdownload-api": "dts main",
+		"postinstall": "npm run download-api"
 	},
 	"dependencies": {
 		"@vscode/chat-extension-utils": "^0.0.0-alpha.1",
@@ -128,9 +131,10 @@
 		"@eslint/js": "^9.13.0",
 		"@stylistic/eslint-plugin": "^2.9.0",
 		"@types/node": "^20",
-		"@types/vscode": "^1.95.0",
+		"@types/vscode": "^1.100.0",
 		"eslint": "^9.13.0",
 		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.26.0"
+		"typescript-eslint": "^8.26.0",
+		"@vscode/dts": "^0.4.1"
 	}
 }

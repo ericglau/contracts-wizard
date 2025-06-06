@@ -1,24 +1,27 @@
 import * as vscode from 'vscode';
 
-export function registerMCPServer(_context: vscode.ExtensionContext) {
-	// This isn't supported yet in VS Code.
+export function registerMCPServer(context: vscode.ExtensionContext) {
+	/**
+	 * You can use proposed API here. `vscode.` should start auto complete
+	 * Proposed API as defined in vscode.proposed.<proposalName>.d.ts.
+	 */
 
-	// const didChangeEmitter = new vscode.EventEmitter<void>();
+	const didChangeEmitter = new vscode.EventEmitter<void>();
 
-	// context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('openzeppelin-wizard-mcp', {
-	// 	onDidChangeMcpServerDefinitions: didChangeEmitter.event,
-	// 	provideMcpServerDefinitions: async () => {
-	// 		let servers: vscode.McpServerDefinition[] = [];
+	context.subscriptions.push(vscode.lm.registerMcpServerDefinitionProvider('openzeppelin-vscode-wizard.mcp', {
+		onDidChangeMcpServerDefinitions: didChangeEmitter.event,
+		provideMcpServerDefinitions: async () => {
+			let servers: vscode.McpServerDefinition[] = [];
 
-  //     servers.push(new vscode.McpStdioServerDefinition(
-  //     {
-  //       label: 'OpenZeppelin Contracts Wizard',
-  //       command: 'npx',
-  //       args: ['@ericglau/wizard-mcp'],
-  //       version: '0.0.1-alpha.6'
-  //     }));
+			servers.push(new vscode.McpStdioServerDefinition(
+				'openzeppelin-wizard-mcp',
+				'npx',
+				['@ericglau/wizard-mcp'],
+			));
 
-	// 		return servers;
-	// 	}
-	// }));
+			console.log('MCP registered!');
+
+			return servers;
+		}
+	}));
 }
