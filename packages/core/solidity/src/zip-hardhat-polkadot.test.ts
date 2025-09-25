@@ -51,7 +51,7 @@ async function runIgnitionTest(c: Contract, t: ExecutionContext<Context>, opts: 
   const zip = await zipHardhatPolkadot(c, opts);
 
   assertIgnitionLayout(zip, c, t);
-  await extractAndInstall(zip, t);
+  await extractAndRun(zip, t);
   await assertIgnitionContents(zip, c, t);
 }
 
@@ -74,7 +74,7 @@ function assertIgnitionLayout(zip: JSZip, c: Contract, t: ExecutionContext<Conte
   ]);
 }
 
-async function extractAndInstall(zip: JSZip, t: ExecutionContext<Context>) {
+async function extractAndRun(zip: JSZip, t: ExecutionContext<Context>) {
   const files = Object.values(zip.files);
 
   const tempFolder = t.context.tempFolder;
