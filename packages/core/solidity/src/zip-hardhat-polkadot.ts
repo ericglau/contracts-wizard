@@ -62,6 +62,6 @@ ignition/deployments/chain-420420420
     }
 }
 
-export async function zipHardhatPolkadot(c: Contract, opts: GenericOptions): Promise<JSZip> {
+export async function zipHardhatPolkadot(c: Contract, opts?: GenericOptions): Promise<JSZip> {
     return new HardhatPolkadotZipGenerator().zipHardhat(c, opts);
 }
