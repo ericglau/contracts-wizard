@@ -7,7 +7,7 @@ import type { Lines } from './utils/format-lines';
 import { formatLinesWithSpaces, spaceBetween } from './utils/format-lines';
 
 class TestGenerator {
-  constructor(private parent: HardhatZipGenerator) { }
+  constructor(private parent: HardhatZipGenerator) {}
 
   getContent(c: Contract, opts?: GenericOptions): string {
     return formatLinesWithSpaces(2, ...spaceBetween(this.getImports(c), this.getTestCase(c, opts)));
@@ -185,9 +185,9 @@ async function main() {
 
   ${c.constructorArgs.length > 0 ? '// TODO: Set values for the constructor arguments below' : ''}
   const instance = await ${this.getDeploymentCall(
-      c,
-      c.constructorArgs.map(a => a.name),
-    )};
+    c,
+    c.constructorArgs.map(a => a.name),
+  )};
   await instance.waitForDeployment();
 
   console.log(\`${c.upgradeable ? 'Proxy' : 'Contract'} deployed to \${await instance.getAddress()}\`);

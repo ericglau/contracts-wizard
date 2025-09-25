@@ -65,7 +65,7 @@ export const defaultOverrides: Overrides = {
   overrideZipHardhat: undefined,
   omitZipFoundry: false,
   remix: undefined,
-  sanitizeOmittedFeatures: (_: GenericOptions) => { },
+  sanitizeOmittedFeatures: (_: GenericOptions) => {},
   postConfigLanguage: undefined,
   aiAssistant: undefined,
 };

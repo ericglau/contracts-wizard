@@ -88,7 +88,7 @@ async function extractAndInstall(zip: JSZip, t: ExecutionContext<Context>) {
     }
   }
 
-  let command = `cd "${tempFolder}" && npm install && npx hardhat compile`;
+  const command = `cd "${tempFolder}" && npm install && npx hardhat compile`;
 
   const exec = util.promisify(child.exec);
   const result = await exec(command);
