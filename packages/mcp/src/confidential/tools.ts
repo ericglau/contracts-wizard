@@ -1,5 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerConfidentialConfidentialFungible } from './tools/confidentialFungible.js';
+import { registerConfidentialConfidentialFungible } from './tools/confidentialFungible';
 import type { KindedOptions } from '@openzeppelin/wizard-confidential';
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 

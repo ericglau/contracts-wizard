@@ -1,12 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerCairoAccount } from './tools/account.js';
-import { registerCairoCustom } from './tools/custom.js';
-import { registerCairoERC20 } from './tools/erc20.js';
-import { registerCairoERC721 } from './tools/erc721.js';
-import { registerCairoERC1155 } from './tools/erc1155.js';
-import { registerCairoGovernor } from './tools/governor.js';
-import { registerCairoMultisig } from './tools/multisig.js';
-import { registerCairoVesting } from './tools/vesting.js';
+import { registerCairoAccount } from './tools/account';
+import { registerCairoCustom } from './tools/custom';
+import { registerCairoERC20 } from './tools/erc20';
+import { registerCairoERC721 } from './tools/erc721';
+import { registerCairoERC1155 } from './tools/erc1155';
+import { registerCairoGovernor } from './tools/governor';
+import { registerCairoMultisig } from './tools/multisig';
+import { registerCairoVesting } from './tools/vesting';
 import type { KindedOptions } from '@openzeppelin/wizard-cairo';
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 

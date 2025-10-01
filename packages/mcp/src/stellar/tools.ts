@@ -1,7 +1,7 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerStellarFungible } from './tools/fungible.js';
-import { registerStellarStablecoin } from './tools/stablecoin.js';
-import { registerStellarNonFungible } from './tools/non-fungible.js';
+import { registerStellarFungible } from './tools/fungible';
+import { registerStellarStablecoin } from './tools/stablecoin';
+import { registerStellarNonFungible } from './tools/non-fungible';
 import type { KindedOptions } from '@openzeppelin/wizard-stellar';
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 

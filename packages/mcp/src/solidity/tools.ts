@@ -1,12 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerSolidityAccount } from './tools/account.js';
-import { registerSolidityCustom } from './tools/custom.js';
-import { registerSolidityERC20 } from './tools/erc20.js';
-import { registerSolidityERC721 } from './tools/erc721.js';
-import { registerSolidityERC1155 } from './tools/erc1155.js';
-import { registerSolidityGovernor } from './tools/governor.js';
-import { registerSolidityStablecoin } from './tools/stablecoin.js';
-import { registerSolidityRWA } from './tools/rwa.js';
+import { registerSolidityAccount } from './tools/account';
+import { registerSolidityCustom } from './tools/custom';
+import { registerSolidityERC20 } from './tools/erc20';
+import { registerSolidityERC721 } from './tools/erc721';
+import { registerSolidityERC1155 } from './tools/erc1155';
+import { registerSolidityGovernor } from './tools/governor';
+import { registerSolidityStablecoin } from './tools/stablecoin';
+import { registerSolidityRWA } from './tools/rwa';
 import type { KindedOptions } from '@openzeppelin/wizard';
 import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
 
