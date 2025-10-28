@@ -58,6 +58,13 @@ export default [
       }
     },
     plugins: [
+      resolve({
+        browser: true,
+        preferBuiltins: false,
+      }),
+
+      commonjs(),
+
       styles({
         include: 'src/standalone.css',
         mode: ['extract'],
