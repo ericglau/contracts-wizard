@@ -9,6 +9,8 @@ export type Access = (typeof accessOptions)[number];
  * Sets access control for the contract by adding inheritance.
  */
 export function setAccessControl(c: ContractBuilder, access: Access) {
+  // TODO: When changing the inheritance order, we should also update the order in which parent initializers are called, so that this aligns with documented best practices for upgradeable contracts.
+  // This may require implementing an abstraction in `contract.ts`, so that access control (and other contracts that we want to inherit last, such as UUPSUpgradeable) are actually added after the other features.
   switch (access) {
     case 'ownable': {
       if (c.addParent(parents.Ownable, [{ lit: 'initialOwner' }])) {
