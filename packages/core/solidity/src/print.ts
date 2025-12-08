@@ -104,7 +104,21 @@ function printCompatibleLibraryVersions(contract: Contract, opts?: Options): str
 function printInheritance(contract: Contract, { transformName }: Helpers): [] | [string] {
   const visibleParents = contract.parents.filter(p => !p.constructionOnly);
   if (visibleParents.length > 0) {
-    return ['is ' + visibleParents.map(p => transformName(p.contract)).join(', ')];
+    const sortedVisibleParents = visibleParents.sort((a, b) => {
+      /**
+       * These contracts are not closely related to the main base/extension contracts, so inherit them last for better readability.
+       *
+       * IMPORTANT: Do not add contracts to this list that base/extension contracts inherit from, since it could cause linearization to become impossible.
+       * Linearization is validated for all possible imports in the `yarn prepare` script via `packages/core/solidity/src/generate/sources.ts`.
+       */
+      const INHERIT_LAST = ['Ownable', 'AccessControl', 'AccessManaged', 'UUPSUpgradeable'];
+      const aLast = INHERIT_LAST.includes(a.contract.name);
+      const bLast = INHERIT_LAST.includes(b.contract.name);
+      if (aLast && !bLast) return 1;
+      if (!aLast && bLast) return -1;
+      return 0;
+    });
+    return ['is ' + sortedVisibleParents.map(p => transformName(p.contract)).join(', ')];
   }
   return [];
 }
