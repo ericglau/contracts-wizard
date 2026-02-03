@@ -15,11 +15,7 @@
 ```rust
 #![no_std]
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
-use openzeppelin_stellar_contracts::token::fungible::{
-    FungibleToken,
-    Base,
-};
-use openzeppelin_stellar_contracts::access::ownable;
+use stellar_tokens::fungible::{Base, FungibleToken};
 
 #[contract]
 pub struct MyToken;
@@ -29,15 +25,9 @@ impl FungibleToken for MyToken {}
 
 #[contractimpl]
 impl MyToken {
-    pub fn __constructor(e: &Env, admin: Address) {
+    pub fn __constructor(e: &Env) {
         // Fixed 7 decimals for Stellar
-        Base::set_metadata(
-            e,
-            7,
-            String::from_str(e, "MyToken"),
-            String::from_str(e, "MTK"),
-        );
-        ownable::set_owner(e, &admin);
+        Base::set_metadata(e, 7, String::from_str(e, "MyToken"), String::from_str(e, "MTK"));
     }
 }
 ```
@@ -66,6 +56,7 @@ Base::set_metadata(e, 18, name, symbol);  // Will not work as expected
 ### Fungible Token with Premint
 
 ```rust
+use stellar_access::ownable;
 #[contractimpl]
 impl MyToken {
     pub fn __constructor(e: &Env, admin: Address, recipient: Address, amount: i128) {
@@ -87,11 +78,7 @@ impl MyToken {
 ### Fungible Token with Burnable
 
 ```rust
-use openzeppelin_stellar_contracts::token::fungible::{
-    FungibleToken,
-    FungibleBurnable,
-    Base,
-};
+use stellar_tokens::fungible::{Base, burnable::FungibleBurnable, FungibleToken};
 
 #[contract]
 pub struct MyToken;
@@ -115,9 +102,9 @@ impl MyToken {
 
 ```rust
 use stellar_macros::{only_owner, when_not_paused};
-use openzeppelin_stellar_contracts::token::fungible::{FungibleToken, Base};
-use openzeppelin_stellar_contracts::access::ownable;
-use openzeppelin_stellar_contracts::security::pausable;
+use stellar_access::ownable;
+use stellar_contract_utils::pausable;
+use stellar_tokens::fungible::{Base, FungibleToken};
 
 #[contract]
 pub struct MyToken;
@@ -179,11 +166,7 @@ impl FungibleToken for MyToken {
 ```rust
 #![no_std]
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
-use openzeppelin_stellar_contracts::token::non_fungible::{
-    NonFungibleToken,
-    Base,
-};
-use openzeppelin_stellar_contracts::access::ownable;
+use stellar_tokens::non_fungible::{Base, NonFungibleToken};
 
 #[contract]
 pub struct MyNFT;
@@ -193,13 +176,11 @@ impl NonFungibleToken for MyNFT {}
 
 #[contractimpl]
 impl MyNFT {
-    pub fn __constructor(e: &Env, admin: Address) {
-        Base::set_metadata(
-            e,
-            String::from_str(e, "MyNFT"),
-            String::from_str(e, "MNFT"),
-        );
-        ownable::set_owner(e, &admin);
+    pub fn __constructor(e: &Env) {
+        let uri = String::from_str(e, "https://www.mytoken.com");
+        let name = String::from_str(e, "MyNFT");
+        let symbol = String::from_str(e, "MNFT");
+        Base::set_metadata(e, uri, name, symbol);
     }
 }
 ```
@@ -211,9 +192,11 @@ use stellar_macros::only_owner;
 
 #[contractimpl]
 impl MyNFT {
-    pub fn __constructor(e: &Env, admin: Address) {
-        Base::set_metadata(e, String::from_str(e, "MyNFT"), String::from_str(e, "MNFT"));
-        ownable::set_owner(e, &admin);
+    pub fn __constructor(e: &Env) {
+        let uri = String::from_str(e, "https://www.mytoken.com");
+        let name = String::from_str(e, "MyNFT");
+        let symbol = String::from_str(e, "MNFT");
+        Base::set_metadata(e, uri, name, symbol);
     }
 
     #[only_owner]
@@ -232,11 +215,7 @@ impl MyNFT {
 ### NFT with Burnable
 
 ```rust
-use openzeppelin_stellar_contracts::token::non_fungible::{
-    NonFungibleToken,
-    NonFungibleBurnable,
-    Base,
-};
+use stellar_tokens::non_fungible::{Base, burnable::NonFungibleBurnable, NonFungibleToken};
 
 #[contract]
 pub struct MyNFT;
@@ -259,8 +238,9 @@ Stablecoins extend fungible tokens with compliance features:
 ```rust
 #![no_std]
 use soroban_sdk::{contract, contractimpl, Address, Env, String, Symbol};
-use openzeppelin_stellar_contracts::token::fungible::{FungibleToken, Base};
-use openzeppelin_stellar_contracts::access::access_control;
+use stellar_access::access_control;
+use stellar_contract_utils::pausable;
+use stellar_tokens::fungible::{Base, FungibleToken};
 use stellar_macros::{only_role, when_not_paused};
 
 #[contract]
@@ -288,8 +268,8 @@ impl MyStablecoin {
     pub fn __constructor(e: &Env, admin: Address, minter: Address, pauser: Address) {
         Base::set_metadata(e, 7, String::from_str(e, "USD Coin"), String::from_str(e, "USDC"));
         access_control::set_admin(e, &admin);
-        access_control::grant_role(e, &MINTER_ROLE, &minter);
-        access_control::grant_role(e, &PAUSER_ROLE, &pauser);
+        access_control::grant_role_no_auth(e, &minter, &MINTER_ROLE, &admin);
+        access_control::grant_role_no_auth(e, &pauser, &PAUSER_ROLE, &admin);
     }
 
     #[only_role(caller, "MINTER")]

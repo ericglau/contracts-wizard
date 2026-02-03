@@ -27,7 +27,7 @@ Single account controls privileged functions.
 ### Basic Usage
 
 ```rust
-use openzeppelin_stellar_contracts::access::ownable;
+use stellar_access::ownable;
 use stellar_macros::only_owner;
 
 #[contract]
@@ -70,10 +70,10 @@ impl MyContract {
 ownable::set_owner(e, &owner);
 
 // Get current owner
-let owner: Address = ownable::owner(e);
+let owner: Option<Address> = ownable::get_owner(e);
 
 // Transfer ownership
-ownable::transfer_ownership(e, &new_owner);
+ownable::transfer_ownership(e, &new_owner, live_until_ledger);
 
 // Enforce caller is owner
 ownable::enforce_owner_auth(e);
@@ -82,17 +82,17 @@ ownable::enforce_owner_auth(e);
 ### Ownable Trait Implementation
 
 ```rust
-use openzeppelin_stellar_contracts::access::ownable::{Ownable, ownable};
+use stellar_access::ownable::{Ownable, self as ownable};
 
 #[contractimpl]
 impl Ownable for MyContract {
-    fn owner(e: &Env) -> Address {
-        ownable::owner(e)
+    fn get_owner(e: &Env) -> Option<Address> {
+        ownable::get_owner(e)
     }
 
-    fn transfer_ownership(e: &Env, new_owner: &Address) {
+    fn transfer_ownership(e: &Env, new_owner: Address, live_until_ledger: u32) {
         ownable::enforce_owner_auth(e);
-        ownable::transfer_ownership(e, new_owner);
+        ownable::transfer_ownership(e, &new_owner, live_until_ledger);
     }
 }
 ```
@@ -106,7 +106,7 @@ Multiple roles with granular permissions.
 ### Basic Usage
 
 ```rust
-use openzeppelin_stellar_contracts::access::access_control;
+use stellar_access::access_control;
 use soroban_sdk::Symbol;
 use stellar_macros::only_role;
 
@@ -121,7 +121,7 @@ impl MyContract {
 
         // Grant roles
         let minter_role = Symbol::new(e, "MINTER_ROLE");
-        access_control::grant_role(e, &minter_role, &minter);
+        access_control::grant_role_no_auth(e, &minter, &minter_role, &admin);
     }
 
     #[only_role(caller, "MINTER_ROLE")]
@@ -140,7 +140,7 @@ impl MyContract {
     pub fn mint(e: &Env, caller: &Address, to: &Address, amount: i128) {
         // Explicit role check
         let minter_role = Symbol::new(e, "MINTER_ROLE");
-        access_control::enforce_role(e, caller, &minter_role);
+        access_control::ensure_role(e, &minter_role, caller);
 
         Base::mint(e, to, amount);
     }
@@ -166,7 +166,7 @@ access_control::has_role(e, &account, &role) -> Option<u32>;
 access_control::get_existing_roles(e) -> Vec<Symbol>;
 
 // Enforcement
-access_control::enforce_role(e, &account, &role);
+access_control::ensure_role(e, &role, &account);
 ```
 
 ### Role Definition
@@ -186,7 +186,7 @@ let pauser_role = Symbol::new(e, "PAUSER_ROLE");
 ### AccessControl Trait Implementation
 
 ```rust
-use openzeppelin_stellar_contracts::access::access_control::{AccessControl, access_control};
+use stellar_access::access_control::{AccessControl, self as access_control};
 
 #[contractimpl]
 impl AccessControl for MyContract {
@@ -234,7 +234,7 @@ Emergency pause functionality.
 ### Basic Usage
 
 ```rust
-use openzeppelin_stellar_contracts::security::pausable;
+use stellar_contract_utils::pausable;
 use stellar_macros::{only_owner, when_not_paused};
 
 #[contract]
@@ -266,7 +266,9 @@ impl MyContract {
 impl MyContract {
     pub fn transfer(e: &Env, from: &Address, to: &Address, amount: i128) {
         // Explicit pause check
-        pausable::enforce_not_paused(e);
+        if pausable::paused(e) {
+            panic!("paused");
+        }
         // Transfer logic
     }
 }
@@ -280,11 +282,10 @@ pausable::pause(e);
 pausable::unpause(e);
 
 // Check state
-pausable::is_paused(e) -> bool;
+pausable::paused(e) -> bool;
 
 // Enforcement
-pausable::enforce_not_paused(e);
-pausable::enforce_paused(e);
+// Use paused(e) to gate calls
 ```
 
 ---
@@ -294,8 +295,8 @@ pausable::enforce_paused(e);
 ### Full Example
 
 ```rust
-use openzeppelin_stellar_contracts::access::{ownable, access_control};
-use openzeppelin_stellar_contracts::security::pausable;
+use stellar_access::{access_control, ownable};
+use stellar_contract_utils::pausable;
 use stellar_macros::{only_owner, only_role, when_not_paused};
 
 #[contract]
@@ -310,8 +311,8 @@ impl MyToken {
         let pauser_role = Symbol::short("PAUSER");
 
         access_control::set_admin(e, &owner);
-        access_control::grant_role(e, &minter_role, &minter);
-        access_control::grant_role(e, &pauser_role, &pauser);
+        access_control::grant_role_no_auth(e, &minter, &minter_role, &owner);
+        access_control::grant_role_no_auth(e, &pauser, &pauser_role, &owner);
     }
 
     #[when_not_paused]

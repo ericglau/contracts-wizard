@@ -14,7 +14,13 @@ Add to `Scarb.toml`:
 
 ```toml
 [dependencies]
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.15.0" }
+starknet = "2.13.1"
+openzeppelin_macros = "3.0.0"
+openzeppelin_token = "3.0.0"
+openzeppelin_access = "3.0.0"
+openzeppelin_upgrades = "3.0.0"
+openzeppelin_interfaces = "2.1.0"
+openzeppelin_utils = "2.1.0"
 ```
 
 See [installation.md](references/installation.md) for detailed setup.

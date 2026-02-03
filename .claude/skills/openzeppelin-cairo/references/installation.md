@@ -14,10 +14,22 @@
 name = "my_project"
 version = "0.1.0"
 edition = "2024_07"
+cairo-version = "2.13.1"
+scarb-version = "2.13.1"
 
 [dependencies]
-starknet = "2.8.4"
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.15.0" }
+starknet = "2.13.1"
+openzeppelin_macros = "3.0.0"
+openzeppelin_access = "3.0.0"
+openzeppelin_account = "3.0.0"
+openzeppelin_finance = "3.0.0"
+openzeppelin_governance = "3.0.0"
+openzeppelin_introspection = "3.0.0"
+openzeppelin_security = "3.0.0"
+openzeppelin_token = "3.0.0"
+openzeppelin_upgrades = "3.0.0"
+openzeppelin_interfaces = "2.1.0"
+openzeppelin_utils = "2.1.0"
 
 [tool.fmt]
 sort-module-level-items = true
@@ -27,8 +39,7 @@ sort-module-level-items = true
 
 | OZ Contracts | Cairo | Starknet |
 |--------------|-------|----------|
-| v0.15.0 | 2.8.x | 2.8.x |
-| v0.14.0 | 2.7.x | 2.7.x |
+| 3.0.0 | 2.13.1 | 2.13.1 |
 
 ## Import Patterns
 

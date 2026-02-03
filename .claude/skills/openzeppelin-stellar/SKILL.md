@@ -14,8 +14,11 @@ Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
-soroban-sdk = "21.0.0"
-openzeppelin-stellar-contracts = { git = "https://github.com/OpenZeppelin/rust-contracts-for-stellar.git" }
+soroban-sdk = "23.4.0"
+stellar-tokens = "=0.6.0"
+stellar-access = "=0.6.0"
+stellar-contract-utils = "=0.6.0"
+stellar-macros = "=0.6.0"
 ```
 
 See [installation.md](references/installation.md) for detailed setup.
@@ -44,27 +47,21 @@ See [installation.md](references/installation.md) for detailed setup.
 ```rust
 #![no_std]
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
-use openzeppelin_stellar_contracts::token::fungible::{
-    FungibleToken, FungibleTokenClient,
-};
+use stellar_tokens::fungible::{Base, FungibleToken};
 
 #[contract]
 pub struct MyToken;
 
 #[contractimpl]
-impl FungibleToken for MyToken {}
-
-#[contractimpl]
 impl MyToken {
-    pub fn __constructor(e: &Env, admin: Address) {
-        Base::set_metadata(
-            e,
-            7,  // Fixed 7 decimals
-            String::from_str(e, "MyToken"),
-            String::from_str(e, "MTK"),
-        );
-        ownable::set_owner(e, &admin);
+    pub fn __constructor(e: &Env) {
+        Base::set_metadata(e, 7, String::from_str(e, "MyToken"), String::from_str(e, "MTK"));
     }
+}
+
+#[contractimpl(contracttrait)]
+impl FungibleToken for MyToken {
+    type ContractType = Base;
 }
 ```
 

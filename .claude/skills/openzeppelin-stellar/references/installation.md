@@ -21,11 +21,14 @@ crate-type = ["cdylib"]
 doctest = false
 
 [dependencies]
-soroban-sdk = "21.0.0"
-openzeppelin-stellar-contracts = { git = "https://github.com/OpenZeppelin/rust-contracts-for-stellar.git" }
+soroban-sdk = "23.4.0"
+stellar-tokens = "=0.6.0"
+stellar-access = "=0.6.0"
+stellar-contract-utils = "=0.6.0"
+stellar-macros = "=0.6.0"
 
 [dev-dependencies]
-soroban-sdk = { version = "21.0.0", features = ["testutils"] }
+soroban-sdk = { version = "23.4.0", features = ["testutils"] }
 
 [profile.release]
 opt-level = "z"
@@ -48,38 +51,30 @@ debug-assertions = true
 
 ```rust
 // Fungible token (like ERC20)
-use openzeppelin_stellar_contracts::token::fungible::{
-    FungibleToken,
-    FungibleBurnable,
-    Base,
-};
+use stellar_tokens::fungible::{Base, burnable::FungibleBurnable, FungibleToken};
 
 // Non-fungible token (like ERC721)
-use openzeppelin_stellar_contracts::token::non_fungible::{
-    NonFungibleToken,
-    NonFungibleBurnable,
-    Base as NFTBase,
-};
+use stellar_tokens::non_fungible::{Base as NFTBase, burnable::NonFungibleBurnable, NonFungibleToken};
 ```
 
 ### Access Control
 
 ```rust
 // Ownable
-use openzeppelin_stellar_contracts::access::ownable;
+use stellar_access::ownable;
 
 // AccessControl (Roles)
-use openzeppelin_stellar_contracts::access::access_control;
+use stellar_access::access_control;
 ```
 
 ### Utilities
 
 ```rust
 // Pausable
-use openzeppelin_stellar_contracts::security::pausable;
+use stellar_contract_utils::pausable;
 
 // Upgradeable
-use openzeppelin_stellar_contracts::upgradeable::Upgradeable;
+use stellar_contract_utils::upgradeable::UpgradeableInternal;
 use stellar_macros::Upgradeable;
 ```
 
@@ -191,8 +186,8 @@ rustup target add wasm32-unknown-unknown
 Keep SDK versions aligned:
 ```toml
 [dependencies]
-soroban-sdk = "21.0.0"
+soroban-sdk = "23.4.0"
 
 [dev-dependencies]
-soroban-sdk = { version = "21.0.0", features = ["testutils"] }
+soroban-sdk = { version = "23.4.0", features = ["testutils"] }
 ```

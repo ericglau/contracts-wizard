@@ -179,7 +179,9 @@ impl MyToken {
 
     pub fn transfer(e: &Env, from: &Address, to: &Address, amount: i128) {
         // Explicit pause check
-        pausable::enforce_not_paused(e);
+        if pausable::paused(e) {
+            panic!("paused");
+        }
         Base::transfer(e, from, to, amount);
     }
 }

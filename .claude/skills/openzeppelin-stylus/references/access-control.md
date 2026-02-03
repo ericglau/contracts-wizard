@@ -26,23 +26,21 @@ Single account controls privileged functions.
 ### Basic Usage
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
+use alloc::vec::Vec;
 use stylus_sdk::prelude::*;
 use stylus_sdk::alloy_primitives::Address;
 use openzeppelin_stylus::access::ownable::{Ownable, IOwnable};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyContract {
-        #[borrow]
-        Ownable ownable;
-    }
+#[entrypoint]
+#[storage]
+struct MyContract {
+    ownable: Ownable,
 }
 
 #[public]
-#[inherit(Ownable)]
 impl MyContract {
     pub fn privileged_action(&mut self) -> Result<(), Self::Error> {
         self.ownable.only_owner()?;
@@ -74,18 +72,14 @@ fn only_owner(&self) -> Result<(), Error>;
 use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
 use openzeppelin_stylus::access::ownable::{Ownable, IOwnable};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-        #[borrow]
-        Ownable ownable;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
+    ownable: Ownable,
 }
 
 #[public]
-#[inherit(Erc20, Ownable)]
 impl MyToken {
     pub fn mint(&mut self, to: Address, amount: U256) -> Result<(), Self::Error> {
         self.ownable.only_owner()?;
@@ -104,9 +98,10 @@ Multiple roles with granular permissions.
 ### Basic Usage
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
+use alloc::vec::Vec;
 use stylus_sdk::prelude::*;
 use stylus_sdk::alloy_primitives::{Address, U256, B256};
 use openzeppelin_stylus::access::control::{AccessControl, IAccessControl};
@@ -115,16 +110,13 @@ use openzeppelin_stylus::access::control::{AccessControl, IAccessControl};
 const MINTER_ROLE: B256 = B256::ZERO; // keccak256("MINTER_ROLE") in practice
 const PAUSER_ROLE: B256 = B256::ZERO; // keccak256("PAUSER_ROLE") in practice
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyContract {
-        #[borrow]
-        AccessControl access_control;
-    }
+#[entrypoint]
+#[storage]
+struct MyContract {
+    access_control: AccessControl,
 }
 
 #[public]
-#[inherit(AccessControl)]
 impl MyContract {
     pub fn mint(&mut self, to: Address, amount: U256) -> Result<(), Self::Error> {
         self.access_control.only_role(MINTER_ROLE)?;
@@ -186,7 +178,6 @@ fn only_role(&self, role: B256) -> Result<(), Error>;
 
 ```rust
 #[public]
-#[inherit(AccessControl)]
 impl MyContract {
     pub fn initialize(&mut self, admin: Address, minter: Address, pauser: Address) -> Result<(), Self::Error> {
         // Grant admin role
@@ -207,14 +198,11 @@ impl MyContract {
 use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
 use openzeppelin_stylus::access::control::{AccessControl, IAccessControl};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-        #[borrow]
-        AccessControl access_control;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
+    access_control: AccessControl,
 }
 
 const DEFAULT_ADMIN_ROLE: B256 = B256::ZERO;
@@ -222,7 +210,6 @@ const MINTER_ROLE: B256 = /* keccak256("MINTER_ROLE") */;
 const PAUSER_ROLE: B256 = /* keccak256("PAUSER_ROLE") */;
 
 #[public]
-#[inherit(Erc20, AccessControl)]
 impl MyToken {
     pub fn initialize(
         &mut self,

@@ -15,7 +15,7 @@ Add to `Cargo.toml`:
 ```toml
 [dependencies]
 stylus-sdk = "0.6.0"
-openzeppelin-stylus = { git = "https://github.com/OpenZeppelin/rust-contracts-for-stylus.git" }
+openzeppelin-stylus = "^0.3.0"
 alloy-primitives = "0.7.0"
 ```
 
@@ -42,43 +42,35 @@ See [installation.md](references/installation.md) for detailed setup.
 ## Quick Start: ERC20 Token
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
 use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc20::{self, Erc20, IErc20};
+use stylus_sdk::alloy_primitives::{Address, U256};
 use stylus_sdk::prelude::*;
-use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
 }
 
 #[public]
-#[inherit(Erc20)]
-impl MyToken {
-    // Custom functions here
-}
+#[implements(IErc20<Error = erc20::Error>)]
+impl MyToken {}
 ```
 
 ## Storage Pattern
 
-Stylus uses `sol_storage!` macro for state:
+Stylus uses `#[storage]` for state:
 
 ```rust
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-        #[borrow]
-        Ownable ownable;
-        // Custom storage
-        uint256 custom_value;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
+    ownable: Ownable,
 }
 ```
 
@@ -87,9 +79,8 @@ sol_storage! {
 Contracts implement traits from the SDK:
 
 ```rust
-// Inherit all ERC20 functions
 #[public]
-#[inherit(Erc20)]
+#[implements(IErc20<Error = erc20::Error>)]
 impl MyToken {}
 
 // Or implement specific interface

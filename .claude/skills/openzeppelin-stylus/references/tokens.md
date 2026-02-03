@@ -13,24 +13,22 @@
 ### Basic ERC20
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
 use alloc::vec::Vec;
-use stylus_sdk::prelude::*;
+use openzeppelin_stylus::token::erc20::{self, Erc20, IErc20};
 use stylus_sdk::alloy_primitives::{Address, U256};
-use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
+use stylus_sdk::prelude::*;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
 }
 
 #[public]
-#[inherit(Erc20)]
+#[implements(IErc20<Error = erc20::Error>)]
 impl MyToken {}
 ```
 
@@ -46,118 +44,84 @@ impl MyToken {}
 ### ERC20 with Burnable
 
 ```rust
-use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
-use openzeppelin_stylus::token::erc20::extensions::burnable::IErc20Burnable;
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+extern crate alloc;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-    }
+use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc20::extensions::burnable::IErc20Burnable;
+use openzeppelin_stylus::token::erc20::{self, Erc20, IErc20};
+use stylus_sdk::alloy_primitives::{Address, U256};
+use stylus_sdk::prelude::*;
+
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
 }
 
 #[public]
-#[inherit(Erc20)]
-impl MyToken {
-    pub fn burn(&mut self, value: U256) -> Result<(), Self::Error> {
-        self.erc20.burn(value)
-    }
-
-    pub fn burn_from(&mut self, account: Address, value: U256) -> Result<(), Self::Error> {
-        self.erc20.burn_from(account, value)
-    }
-}
+#[implements(IErc20<Error = erc20::Error>, IErc20Burnable<Error = erc20::Error>)]
+impl MyToken {}
 ```
 
 ### ERC20 with Permit
 
 ```rust
-use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
-use openzeppelin_stylus::token::erc20::extensions::permit::{Erc20Permit, IErc20Permit};
-use openzeppelin_stylus::utils::nonces::Nonces;
-use openzeppelin_stylus::utils::cryptography::eip712::Eip712;
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+extern crate alloc;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-        #[borrow]
-        Erc20Permit<Eip712> erc20_permit;
-        #[borrow]
-        Nonces nonces;
-    }
+use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc20::extensions::permit::{self as permit, Erc20Permit, IErc20Permit};
+use openzeppelin_stylus::token::erc20::{self, Erc20, IErc20};
+use openzeppelin_stylus::utils::cryptography::{ecdsa, eip712::IEip712};
+use openzeppelin_stylus::utils::nonces::{INonces, Nonces};
+use stylus_sdk::alloy_primitives::{Address, B256, U256};
+use stylus_sdk::prelude::*;
+
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
+    erc20_permit: Erc20Permit<Eip712>,
+    nonces: Nonces,
+}
+
+#[storage]
+struct Eip712;
+
+impl IEip712 for Eip712 {
+    const NAME: &'static str = "MyToken";
+    const VERSION: &'static str = "1";
 }
 
 #[public]
-#[inherit(Erc20)]
-impl MyToken {
-    #[selector(name = "DOMAIN_SEPARATOR")]
-    pub fn domain_separator(&self) -> B256 {
-        self.erc20_permit.domain_separator()
-    }
-
-    pub fn permit(
-        &mut self,
-        owner: Address,
-        spender: Address,
-        value: U256,
-        deadline: U256,
-        v: u8,
-        r: B256,
-        s: B256,
-    ) -> Result<(), Self::Error> {
-        self.erc20_permit.permit(
-            owner, spender, value, deadline, v, r, s,
-            &mut self.erc20, &mut self.nonces
-        )
-    }
-
-    pub fn nonces(&self, owner: Address) -> U256 {
-        self.nonces.nonces(owner)
-    }
-}
+#[implements(IErc20<Error = permit::Error>, IErc20Permit<Error = permit::Error>, INonces)]
+impl MyToken {}
 ```
 
 ### ERC20 with Flash Mint
 
 ```rust
-use openzeppelin_stylus::token::erc20::{Erc20, IErc20};
-use openzeppelin_stylus::token::erc20::extensions::flash_mint::{Erc20FlashMint, IErc3156FlashLender};
-use stylus_sdk::abi::Bytes;
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+extern crate alloc;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyToken {
-        #[borrow]
-        Erc20 erc20;
-        #[borrow]
-        Erc20FlashMint flash_mint;
-    }
+use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc20::extensions::flash_mint::{self as flash_mint, Erc20FlashMint, IErc3156FlashLender};
+use openzeppelin_stylus::token::erc20::{self, Erc20, IErc20};
+use stylus_sdk::abi::Bytes;
+use stylus_sdk::alloy_primitives::{Address, U256};
+use stylus_sdk::prelude::*;
+
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc20: Erc20,
+    flash_mint: Erc20FlashMint,
 }
 
 #[public]
-#[inherit(Erc20)]
-impl MyToken {
-    pub fn max_flash_loan(&self, token: Address) -> U256 {
-        self.flash_mint.max_flash_loan(token, &self.erc20)
-    }
-
-    pub fn flash_fee(&self, token: Address, value: U256) -> Result<U256, Self::Error> {
-        self.flash_mint.flash_fee(token, value)
-    }
-
-    pub fn flash_loan(
-        &mut self,
-        receiver: Address,
-        token: Address,
-        value: U256,
-        data: &Bytes,
-    ) -> Result<bool, Self::Error> {
-        self.flash_mint.flash_loan(receiver, token, value, data, &mut self.erc20)
-    }
-}
+#[implements(IErc20<Error = flash_mint::Error>, IErc3156FlashLender<Error = flash_mint::Error>)]
+impl MyToken {}
 ```
 
 ---
@@ -167,48 +131,50 @@ impl MyToken {
 ### Basic ERC721
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
 use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc721::{self, Erc721, IErc721};
+use openzeppelin_stylus::utils::introspection::erc165::IErc165;
+use stylus_sdk::abi::Bytes;
+use stylus_sdk::alloy_primitives::{Address, FixedBytes, U256};
 use stylus_sdk::prelude::*;
-use stylus_sdk::alloy_primitives::{Address, U256};
-use openzeppelin_stylus::token::erc721::{Erc721, IErc721};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyNFT {
-        #[borrow]
-        Erc721 erc721;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc721: Erc721,
 }
 
 #[public]
-#[inherit(Erc721)]
-impl MyNFT {}
+#[implements(IErc721<Error = erc721::Error>, IErc165)]
+impl MyToken {}
 ```
 
 ### ERC721 with Burnable
 
 ```rust
-use openzeppelin_stylus::token::erc721::{Erc721, IErc721};
-use openzeppelin_stylus::token::erc721::extensions::burnable::IErc721Burnable;
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+extern crate alloc;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyNFT {
-        #[borrow]
-        Erc721 erc721;
-    }
+use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc721::extensions::burnable::IErc721Burnable;
+use openzeppelin_stylus::token::erc721::{self, Erc721, IErc721};
+use openzeppelin_stylus::utils::introspection::erc165::IErc165;
+use stylus_sdk::abi::Bytes;
+use stylus_sdk::alloy_primitives::{Address, FixedBytes, U256};
+use stylus_sdk::prelude::*;
+
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc721: Erc721,
 }
 
 #[public]
-#[inherit(Erc721)]
-impl MyNFT {
-    pub fn burn(&mut self, token_id: U256) -> Result<(), Self::Error> {
-        self.erc721.burn(token_id)
-    }
-}
+#[implements(IErc721<Error = erc721::Error>, IErc721Burnable<Error = erc721::Error>, IErc165)]
+impl MyToken {}
 ```
 
 ### Key ERC721 Functions
@@ -237,57 +203,50 @@ fn is_approved_for_all(&self, owner: Address, operator: Address) -> bool;
 ### Basic ERC1155
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
 use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc1155::{self, Erc1155, IErc1155};
+use openzeppelin_stylus::utils::introspection::erc165::IErc165;
+use stylus_sdk::abi::Bytes;
+use stylus_sdk::alloy_primitives::{Address, FixedBytes, U256};
 use stylus_sdk::prelude::*;
-use stylus_sdk::alloy_primitives::{Address, U256};
-use openzeppelin_stylus::token::erc1155::{Erc1155, IErc1155};
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyMultiToken {
-        #[borrow]
-        Erc1155 erc1155;
-    }
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc1155: Erc1155,
 }
 
 #[public]
-#[inherit(Erc1155)]
-impl MyMultiToken {}
+#[implements(IErc1155<Error = erc1155::Error>, IErc165)]
+impl MyToken {}
 ```
 
 ### ERC1155 with Burnable
 
 ```rust
-use openzeppelin_stylus::token::erc1155::{Erc1155, IErc1155};
-use openzeppelin_stylus::token::erc1155::extensions::burnable::IErc1155Burnable;
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
+extern crate alloc;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyMultiToken {
-        #[borrow]
-        Erc1155 erc1155;
-    }
+use alloc::vec::Vec;
+use openzeppelin_stylus::token::erc1155::extensions::IErc1155Burnable;
+use openzeppelin_stylus::token::erc1155::{self, Erc1155, IErc1155};
+use openzeppelin_stylus::utils::introspection::erc165::IErc165;
+use stylus_sdk::abi::Bytes;
+use stylus_sdk::alloy_primitives::{Address, FixedBytes, U256};
+use stylus_sdk::prelude::*;
+
+#[entrypoint]
+#[storage]
+struct MyToken {
+    erc1155: Erc1155,
 }
 
 #[public]
-#[inherit(Erc1155)]
-impl MyMultiToken {
-    pub fn burn(&mut self, account: Address, id: U256, value: U256) -> Result<(), Self::Error> {
-        self.erc1155.burn(account, id, value)
-    }
-
-    pub fn burn_batch(
-        &mut self,
-        account: Address,
-        ids: Vec<U256>,
-        values: Vec<U256>,
-    ) -> Result<(), Self::Error> {
-        self.erc1155.burn_batch(account, ids, values)
-    }
-}
+#[implements(IErc1155<Error = erc1155::Error>, IErc1155Burnable<Error = erc1155::Error>, IErc165)]
+impl MyToken {}
 ```
 
 ### Key ERC1155 Functions

@@ -25,7 +25,7 @@ edition = "2021"
 [dependencies]
 stylus-sdk = "0.6.0"
 stylus-proc = "0.6.0"
-openzeppelin-stylus = { git = "https://github.com/OpenZeppelin/rust-contracts-for-stylus.git" }
+openzeppelin-stylus = "^0.3.0"
 alloy-primitives = "0.7.0"
 alloy-sol-types = "0.7.0"
 
@@ -112,16 +112,15 @@ my_project/
 ### Basic lib.rs
 
 ```rust
-#![cfg_attr(not(any(test, feature = "std")), no_std)]
+#![cfg_attr(not(any(test, feature = "export-abi")), no_main)]
 extern crate alloc;
 
 use stylus_sdk::prelude::*;
 
-sol_storage! {
-    #[entrypoint]
-    pub struct MyContract {
-        // Storage fields
-    }
+#[entrypoint]
+#[storage]
+struct MyContract {
+    // Storage fields
 }
 
 #[public]
