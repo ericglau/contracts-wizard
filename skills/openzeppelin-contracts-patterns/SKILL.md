@@ -13,42 +13,62 @@ Verify the required MCP server is available. Server names and tools by ecosystem
 
 | Ecosystem | Server Name | Tools (non-exhaustive) |
 |-----------|-------------|------------------------|
-| Solidity/EVM | `OpenZeppelinSolidityContracts` | `solidity-erc20`, `solidity-erc721`, `solidity-erc1155`, `solidity-governor`, `solidity-account`, `solidity-custom` |
-| Cairo/Starknet | `OpenZeppelinCairoContracts` | `cairo-erc20`, `cairo-erc721`, `cairo-account`, `cairo-governor`, `cairo-custom` |
-| Stylus | `OpenZeppelinStylusContracts` | `stylus-erc20`, `stylus-erc721`, `stylus-erc1155` |
-| Stellar | `OpenZeppelinStellarContracts` | `stellar-fungible`, `stellar-stablecoin`, `stellar-non-fungible` |
-| Uniswap | `OpenZeppelinUniswapHooks` | `uniswap-hooks` |
+| Solidity/EVM | `OpenZeppelinSolidityContracts` or `OpenZeppelinContracts` | `solidity-erc20`, `solidity-erc721`, `solidity-erc1155`, `solidity-governor`, `solidity-account`, `solidity-custom` |
+| Cairo/Starknet | `OpenZeppelinCairoContracts` or `OpenZeppelinContracts` | `cairo-erc20`, `cairo-erc721`, `cairo-account`, `cairo-governor`, `cairo-custom` |
+| Stylus | `OpenZeppelinStylusContracts` or `OpenZeppelinContracts` | `stylus-erc20`, `stylus-erc721`, `stylus-erc1155` |
+| Stellar | `OpenZeppelinStellarContracts` or `OpenZeppelinContracts` | `stellar-fungible`, `stellar-stablecoin`, `stellar-non-fungible` |
+| Uniswap | `OpenZeppelinUniswapHooks` or `OpenZeppelinContracts` | `uniswap-hooks` |
 
 If unavailable, direct user to https://mcp.openzeppelin.com/ for installation.
 
-## Discovery loop (use generators to learn patterns, then apply to user's contract)
+## Discovery Loop
 
-1. **Choose server + target primitive**
-   - Select the MCP server for the user's language/ecosystem.
-   - Identify the generator tool matching the contract type the user is working with (e.g., ERC20 / ERC721 / Governor / Account).
+Do not assume knowledge of what code each feature adds to a contract. Generate and compare to learn the actual patterns.
 
-2. **Generate a baseline for learning**
-   - Generate the simplest valid contract that matches the user's core primitive.
-   - Save this as `baseline` (keep the exact options used).
-   - **Purpose**: This is a reference implementation to study, not the final output.
+### Step 1: Select Tool
 
-3. **Enumerate feature toggles**
-   - From user requirements and the generator's available options, list candidate features to evaluate.
-   - Prefer changing **one option at a time**.
+Match the user's ecosystem and contract type to the appropriate generator tool from the Prerequisites table.
 
-4. **Regenerate variants to observe differences**
-   - For each feature toggle `Fi`, generate `variant_Fi_on` and/or `variant_Fi_off`.
-   - If two features are likely to interact, also generate a small set of pairwise combinations (only as needed).
-   - **Purpose**: Understand what each feature adds or changes.
+### Step 2: Generate Baseline
 
-5. **Diff and extract patterns (no assumptions)**
-   - Diff `baseline` vs each variant.
-   - Record *only what concretely changes*: inheritance/traits, storage, functions/entrypoints, modifiers/guards, initialization.
-   - **Purpose**: Learn the exact code patterns each feature requires.
+Call the generator with only the required parameters (name, symbol, etc.) and all optional features disabled or at defaults. Keep this generated code as the baseline reference.
 
-6. **Apply learned patterns to user's contract**
-   - Use the observed diffs to guide the development or modification of the user's smart contract.
-   - If the user asks for "best practices," answer by:
-     - Showing the observed patterns across generated variants.
-     - Pointing to which toggles produced which concrete code differences.
-     - Explaining how to adapt those patterns to their specific contract.
+### Step 3: Generate Variants
+
+For each feature the user needs:
+1. Call the generator again with the same base parameters
+2. Enable only that one feature
+3. Keep each generated variant
+
+If features might interact (e.g., access control + upgradeability), generate a combined variant as well.
+
+### Step 4: Compare Baseline to Variants
+
+For each variant, compare line-by-line against the baseline. Identify exactly what the feature added or changed:
+
+- **Imports**: New dependencies added
+- **Inheritance**: New base contracts/traits
+- **State variables**: New storage fields
+- **Constructor/initializer**: New parameters or initialization logic
+- **New functions**: Functions that didn't exist in baseline
+- **Modified functions**: Functions that exist in both but have different implementations (look for modifiers, hooks, guards, or overrides)
+
+Record these observations—they are the pattern for that feature.
+
+### Step 5: Apply Patterns to User's Contract
+
+Using the observed differences from Step 4:
+
+1. Add the same imports the feature required
+2. Add the same inheritance
+3. Add any new state variables
+4. Add or modify constructor/initializer logic
+5. Add the new functions exactly as observed
+6. Modify relevant existing functions to include the same modifiers, hooks, guards, or override logic
+
+### Answering Best Practices Questions
+
+When users ask about best practices, run the discovery loop for relevant features, then:
+- Show the concrete patterns observed from the generated code
+- Explain which generator options produced which changes
+- Recommend based on what you observed, not assumptions
