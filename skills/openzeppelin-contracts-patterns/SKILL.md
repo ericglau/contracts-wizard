@@ -1,33 +1,25 @@
 ---
 name: openzeppelin-contracts-patterns
-description: Use when users are writing or modifying smart contracts using OpenZeppelin Contracts components (e.g., ERC20, ERC721, Governor, Account) in Solidity/EVM, Cairo/Starknet, Stylus, Stellar, or Uniswap Hooks and need to understand how to securely and correctly apply specific features or components to new, existing, or work-in-progress contracts.
+description: Use when writing, modifying, or reviewing smart contracts that use OpenZeppelin Contracts. Triggers include: (1) implementing token standards (ERC20, ERC721, ERC1155, fungible, non-fungible), (2) adding security features (access control, pausability), (3) governance contracts (Governor, voting, timelocks), (4) account abstraction, (5) upgradeability patterns, (6) questions about OpenZeppelin component integration. Supports Solidity/EVM, Cairo/Starknet, Stylus, Stellar, and Uniswap Hooks.
 ---
 
 # OpenZeppelin Contracts Patterns
 
-## Goal
+Use the MCP smart contract generators as a discovery tool to learn and apply OpenZeppelin Contracts patterns to user contracts.
 
-Learn how to securely and correctly apply OpenZeppelin Contracts features to **new, existing, or work-in-progress** smart contracts by using the MCP smart contract generators as a discovery tool.
+## Prerequisites
 
-## MCP Server Setup
+Verify the required MCP server is available. Server names and tools by ecosystem:
 
-MCP servers must be installed for the desired languages/ecosystems. If not already installed, visit https://mcp.openzeppelin.com/ for installation instructions.
+| Ecosystem | Server Name | Tools (non-exhaustive) |
+|-----------|-------------|------------------------|
+| Solidity/EVM | `OpenZeppelinSolidityContracts` | `solidity-erc20`, `solidity-erc721`, `solidity-erc1155`, `solidity-governor`, `solidity-account`, `solidity-custom` |
+| Cairo/Starknet | `OpenZeppelinCairoContracts` | `cairo-erc20`, `cairo-erc721`, `cairo-account`, `cairo-governor`, `cairo-custom` |
+| Stylus | `OpenZeppelinStylusContracts` | `stylus-erc20`, `stylus-erc721`, `stylus-erc1155` |
+| Stellar | `OpenZeppelinStellarContracts` | `stellar-fungible`, `stellar-stablecoin`, `stellar-non-fungible` |
+| Uniswap | `OpenZeppelinUniswapHooks` | `uniswap-hooks` |
 
-Verify whether the required servers are available by checking for names similar to the below in the list of available MCP servers, or if any of the tools listed below are available.
-
-Default server names:
-- **Solidity (EVM)**: `OpenZeppelinSolidityContracts`
-- **Cairo (Starknet)**: `OpenZeppelinCairoContracts`
-- **Stylus (Arbitrum Stylus)**: `OpenZeppelinStylusContracts`
-- **Stellar**: `OpenZeppelinStellarContracts`
-- **Uniswap Hooks**: `OpenZeppelinUniswapHooks`
-
-After installation, the following tools become available for each ecosystem. This is a non-exhaustive list and additional tools may become available over time.
-- **Solidity (EVM)**: `solidity-erc20`, `solidity-erc721`, `solidity-erc1155`, `solidity-stablecoin`, `solidity-rwa`, `solidity-account`, `solidity-governor`, `solidity-custom`
-- **Cairo (Starknet)**: `cairo-erc20`, `cairo-erc721`, `cairo-erc1155`, `cairo-account`, `cairo-governor`, `cairo-multisig`, `cairo-vesting`, `cairo-custom`
-- **Stylus (Arbitrum Stylus)**: `stylus-erc20`, `stylus-erc721`, `stylus-erc1155`
-- **Stellar**: `stellar-fungible`, `stellar-stablecoin`, `stellar-non-fungible`
-- **Uniswap Hooks**: `uniswap-hooks`
+If unavailable, direct user to https://mcp.openzeppelin.com/ for installation.
 
 ## Discovery loop (use generators to learn patterns, then apply to user's contract)
 
