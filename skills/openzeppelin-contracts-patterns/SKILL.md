@@ -1,13 +1,13 @@
 ---
 name: openzeppelin-contracts-patterns
-description: Use when users are writing or modifying smart contracts using OpenZeppelin Contracts components (e.g., ERC20, ERC721, Governor, Account) in Solidity/EVM, Cairo/Starknet, Stylus, Stellar, or Uniswap Hooks and need to understand how to securely and correctly apply specific features or components to existing or work-in-progress contracts.
+description: Use when users are writing or modifying smart contracts using OpenZeppelin Contracts components (e.g., ERC20, ERC721, Governor, Account) in Solidity/EVM, Cairo/Starknet, Stylus, Stellar, or Uniswap Hooks and need to understand how to securely and correctly apply specific features or components to new, existing, or work-in-progress contracts.
 ---
 
 # OpenZeppelin Contracts Patterns
 
 ## Goal
 
-Learn how to securely and correctly apply OpenZeppelin Contracts features to **existing or work-in-progress** smart contracts by using the MCP smart contract generators as a discovery tool.
+Learn how to securely and correctly apply OpenZeppelin Contracts features to **new, existing, or work-in-progress** smart contracts by using the MCP smart contract generators as a discovery tool.
 
 ## MCP Server Setup
 
@@ -55,7 +55,7 @@ After installation, the following tools become available for each ecosystem. Thi
    - **Purpose**: Learn the exact code patterns each feature requires.
 
 6. **Apply learned patterns to user's contract**
-   - Use the observed diffs to guide modifications to the user's existing or work-in-progress contract.
+   - Use the observed diffs to guide the development or modification of the user's smart contract.
    - If the user asks for "best practices," answer by:
      - Showing the observed patterns across generated variants.
      - Pointing to which toggles produced which concrete code differences.
