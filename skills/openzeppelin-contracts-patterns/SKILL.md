@@ -5,7 +5,16 @@ description: Use when writing, modifying, or reviewing smart contracts that use 
 
 # OpenZeppelin Contracts Patterns
 
-Use the MCP smart contract generators as a discovery tool to learn and apply OpenZeppelin Contracts patterns to user contracts.
+Use the MCP smart contract generators as a **discovery tool** to learn OpenZeppelin Contracts patterns, then **apply those patterns to the user's existing contract**.
+
+**Important**: Do NOT simply return generated code to the user. The generators produce reference implementations that show what imports, inheritance, state variables, constructor changes, functions, and modifiers a feature requires. Your job is to extract those patterns and apply them to the user's actual contract files.
+
+## Workflow Summary
+
+1. **Read** the user's existing contract to understand its current structure
+2. **Generate** reference implementations using MCP tools to discover patterns
+3. **Compare** baseline vs. feature-enabled outputs to identify what changes
+4. **Edit** the user's contract file directly, applying the discovered patterns
 
 ## Prerequisites
 
@@ -57,7 +66,7 @@ Record these observations—they are the pattern for that feature.
 
 ### Step 5: Apply Patterns to User's Contract
 
-Using the observed differences from Step 4:
+**Read the user's existing contract file first**, then apply the observed differences from Step 4 by editing their file:
 
 1. Add the same imports the feature required
 2. Add the same inheritance
@@ -65,6 +74,8 @@ Using the observed differences from Step 4:
 4. Add or modify constructor/initializer logic
 5. Add the new functions exactly as observed
 6. Modify relevant existing functions to include the same modifiers, hooks, guards, or override logic
+
+**Do not ask the user to make these changes themselves**—use the Edit tool to apply them directly to their contract file.
 
 ### Answering Best Practices Questions
 
