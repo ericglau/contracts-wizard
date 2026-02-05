@@ -5,6 +5,18 @@ description: Use when writing, modifying, or reviewing smart contracts that use 
 
 # OpenZeppelin Contracts Patterns
 
+## CRITICAL: Always Read the Project First
+
+**BEFORE calling any MCP generator tool**, you MUST:
+
+1. **Search the user's project** for existing smart contracts (e.g., `Glob` for `**/*.sol`, `**/*.cairo`, etc.)
+2. **Read the relevant contract files** to understand what already exists
+3. **Only then** use the MCP generators as a discovery tool for patterns
+
+Never assume the user wants a new contract. When they say "my account needs multisig" or "add pausability to my token", they are asking you to modify their existing code, not generate something from scratch.
+
+---
+
 Use the MCP smart contract generators as a **discovery tool** to learn OpenZeppelin Contracts patterns, then **apply those patterns to the user's existing contract**.
 
 **Important**: Do NOT simply return generated code to the user. The generators produce reference implementations that show what imports, inheritance, state variables, constructor changes, functions, and modifiers a feature requires. Your job is to extract those patterns and apply them to the user's actual contract files.
@@ -13,7 +25,7 @@ Use the MCP smart contract generators as a **discovery tool** to learn OpenZeppe
 
 ## Workflow Summary
 
-1. **Read** the user's existing contract to understand its current structure
+1. **Search and read** the user's existing contracts to understand their current structure
 2. **Generate** reference implementations using MCP tools to discover patterns
 3. **Compare** baseline vs. feature-enabled outputs to identify what changes
 4. **Edit** the user's contract file directly, applying the discovered patterns
