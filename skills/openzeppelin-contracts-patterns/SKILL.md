@@ -9,6 +9,8 @@ Use the MCP smart contract generators as a **discovery tool** to learn OpenZeppe
 
 **Important**: Do NOT simply return generated code to the user. The generators produce reference implementations that show what imports, inheritance, state variables, constructor changes, functions, and modifiers a feature requires. Your job is to extract those patterns and apply them to the user's actual contract files.
 
+**Default to integration, not replacement**: When the user asks to modify an existing contract (e.g., "make my token use AccessManaged"), integrate the pattern into their existing code—don't ask whether to replace or convert. Generated contracts are reference implementations; the user's contract contains their business logic. Only replace an existing contract if the user explicitly requests it (e.g., "start fresh", "replace this with a basic ERC20").
+
 ## Workflow Summary
 
 1. **Read** the user's existing contract to understand its current structure
