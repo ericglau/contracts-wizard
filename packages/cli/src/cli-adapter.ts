@@ -1,53 +1,173 @@
 import { z } from 'zod';
 
+type PrimitiveType = 'string' | 'boolean' | 'number';
+
 interface BaseTypeInfo {
-  type: 'string' | 'boolean' | 'number' | 'object';
+  type: PrimitiveType | 'object';
   enumValues?: string[];
 }
 
-function getBaseType(schema: z.ZodTypeAny): BaseTypeInfo {
-  const def = schema._def;
+interface FlagSpec {
+  name: string;
+  path: string[];
+  type: PrimitiveType;
+  enumValues?: string[];
+  required: boolean;
+  description?: string;
+  hasLiteralFalse: boolean;
+}
 
-  if (def.typeName === 'ZodOptional' || def.typeName === 'ZodNullable' || def.typeName === 'ZodDefault') {
-    return getBaseType(def.innerType as z.ZodTypeAny);
+function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
+  let current = schema;
+
+  while (true) {
+    if (current instanceof z.ZodOptional || current instanceof z.ZodNullable || current instanceof z.ZodDefault) {
+      current = current._def.innerType;
+      continue;
+    }
+    if (current instanceof z.ZodEffects) {
+      current = current._def.schema;
+      continue;
+    }
+    return current;
   }
-  if (def.typeName === 'ZodEffects') return getBaseType(def.schema as z.ZodTypeAny);
-  if (def.typeName === 'ZodString') return { type: 'string' };
-  if (def.typeName === 'ZodBoolean') return { type: 'boolean' };
-  if (def.typeName === 'ZodNumber') return { type: 'number' };
-  if (def.typeName === 'ZodLiteral') {
-    const val = def.value;
+}
+
+function getObjectShape(schema: z.ZodTypeAny): z.ZodRawShape | undefined {
+  const unwrapped = unwrapSchema(schema);
+  return unwrapped instanceof z.ZodObject ? unwrapped.shape : undefined;
+}
+
+function getShapeField(shape: z.ZodRawShape, key: string): z.ZodTypeAny {
+  const field = shape[key];
+  if (!field) {
+    throw new Error(`Unknown schema field: ${key}`);
+  }
+  return field;
+}
+
+function getBaseType(schema: z.ZodTypeAny): BaseTypeInfo {
+  const unwrapped = unwrapSchema(schema);
+
+  if (unwrapped instanceof z.ZodString) return { type: 'string' };
+  if (unwrapped instanceof z.ZodBoolean) return { type: 'boolean' };
+  if (unwrapped instanceof z.ZodNumber) return { type: 'number' };
+  if (unwrapped instanceof z.ZodLiteral) {
+    const val = unwrapped._def.value;
     if (typeof val === 'boolean') return { type: 'boolean' };
     if (typeof val === 'string') return { type: 'string', enumValues: [val] };
     return { type: 'string' };
   }
-  if (def.typeName === 'ZodEnum') return { type: 'string', enumValues: def.values as string[] };
-  if (def.typeName === 'ZodUnion') {
-    const options = def.options as z.ZodTypeAny[];
+  if (unwrapped instanceof z.ZodEnum) return { type: 'string', enumValues: [...unwrapped.options] };
+  if (unwrapped instanceof z.ZodUnion) {
     const literals: string[] = [];
     let hasFalse = false;
-    for (const opt of options) {
-      const base = getBaseType(opt);
+    for (const option of unwrapped._def.options) {
+      const base = getBaseType(option);
       if (base.enumValues) literals.push(...base.enumValues);
-      if (opt._def.typeName === 'ZodLiteral' && opt._def.value === false) hasFalse = true;
+
+      const unwrappedOption = unwrapSchema(option);
+      if (unwrappedOption instanceof z.ZodLiteral && unwrappedOption._def.value === false) {
+        hasFalse = true;
+      }
     }
     if (literals.length > 0) return { type: 'string', enumValues: hasFalse ? ['false', ...literals] : literals };
     return { type: 'string' };
   }
-  if (def.typeName === 'ZodObject') return { type: 'object' };
+  if (unwrapped instanceof z.ZodObject) return { type: 'object' };
   return { type: 'string' };
 }
 
 function getDescription(schema: z.ZodTypeAny): string | undefined {
   if (schema.description) return schema.description;
-  if (schema._def.typeName === 'ZodOptional') {
-    return (schema._def.innerType as z.ZodTypeAny)?.description;
+  if (schema instanceof z.ZodOptional) {
+    return schema.unwrap().description;
   }
   return undefined;
 }
 
 function isRequired(schema: z.ZodTypeAny): boolean {
   return schema._def.typeName !== 'ZodOptional' && schema._def.typeName !== 'ZodDefault';
+}
+
+function collectFlagSpecs(shape: z.ZodRawShape, pathPrefix: string[] = [], parentRequired = true): FlagSpec[] {
+  const specs: FlagSpec[] = [];
+
+  for (const key of Object.keys(shape)) {
+    const schema = getShapeField(shape, key);
+    const base = getBaseType(schema);
+    const path = [...pathPrefix, key];
+    const required = parentRequired && isRequired(schema);
+
+    if (base.type === 'object') {
+      const innerShape = getObjectShape(schema);
+      if (innerShape) {
+        specs.push(...collectFlagSpecs(innerShape, path, required));
+      }
+      continue;
+    }
+
+    specs.push({
+      name: path.join('.'),
+      path,
+      type: base.type,
+      enumValues: base.enumValues,
+      required,
+      description: getDescription(schema),
+      hasLiteralFalse: base.enumValues?.includes('false') ?? false,
+    });
+  }
+
+  return specs;
+}
+
+function formatFlag(spec: FlagSpec): string {
+  if (spec.type === 'boolean') {
+    return `  --${spec.name}`;
+  }
+
+  const typeStr = spec.enumValues ? spec.enumValues.join('|') : spec.type;
+  return `  --${spec.name} <${typeStr}>`;
+}
+
+function parseFlagValue(spec: FlagSpec, value: string): string | number | boolean {
+  if (spec.type === 'number') {
+    return Number(value);
+  }
+  if (spec.hasLiteralFalse && value === 'false') {
+    return false;
+  }
+  return value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function setPathValue(target: Record<string, unknown>, path: string[], value: string | number | boolean): void {
+  let current = target;
+
+  for (const segment of path.slice(0, -1)) {
+    const existing = current[segment];
+
+    if (existing === undefined) {
+      current[segment] = {};
+    } else if (!isRecord(existing)) {
+      throw new Error(`Invalid option nesting: --${path.join('.')}`);
+    }
+
+    const next = current[segment];
+    if (!isRecord(next)) {
+      throw new Error(`Invalid option nesting: --${path.join('.')}`);
+    }
+    current = next;
+  }
+
+  const leaf = path.at(-1);
+  if (!leaf) {
+    throw new Error('Invalid schema path');
+  }
+  current[leaf] = value;
 }
 
 export function generateHelp(commandName: string, shape: z.ZodRawShape, description?: string): string {
@@ -58,34 +178,10 @@ export function generateHelp(commandName: string, shape: z.ZodRawShape, descript
   const required: string[] = [];
   const optional: string[] = [];
 
-  for (const [key, schema] of Object.entries(shape)) {
-    const zodSchema = schema as z.ZodTypeAny;
-    const base = getBaseType(zodSchema);
+  for (const spec of collectFlagSpecs(shape)) {
+    const line = `${formatFlag(spec).padEnd(40)}${spec.description ?? ''}`;
 
-    if (base.type === 'object') {
-      const innerDef = zodSchema._def;
-      const innerSchema =
-        innerDef.typeName === 'ZodOptional'
-          ? (innerDef.innerType as z.ZodObject<z.ZodRawShape>)
-          : (zodSchema as z.ZodObject<z.ZodRawShape>);
-      if (innerSchema._def?.typeName === 'ZodObject') {
-        for (const [innerKey, innerField] of Object.entries(innerSchema.shape as z.ZodRawShape)) {
-          const innerBase = getBaseType(innerField as z.ZodTypeAny);
-          const typeStr = innerBase.enumValues ? innerBase.enumValues.join('|') : innerBase.type;
-          const desc = getDescription(innerField as z.ZodTypeAny);
-          const flag = innerBase.type === 'boolean' ? `  --${key}.${innerKey}` : `  --${key}.${innerKey} <${typeStr}>`;
-          optional.push(`${flag.padEnd(40)}${desc ?? ''}`);
-        }
-      }
-      continue;
-    }
-
-    const typeStr = base.enumValues ? base.enumValues.join('|') : base.type;
-    const desc = getDescription(zodSchema) ?? '';
-    const flag = base.type === 'boolean' ? `  --${key}` : `  --${key} <${typeStr}>`;
-    const line = `${flag.padEnd(40)}${desc}`;
-
-    if (isRequired(zodSchema)) {
+    if (spec.required) {
       required.push(line);
     } else {
       optional.push(line);
@@ -105,25 +201,6 @@ export function generateHelp(commandName: string, shape: z.ZodRawShape, descript
   return lines.join('\n');
 }
 
-interface FieldMeta {
-  base: BaseTypeInfo;
-  isNumber: boolean;
-  hasLiteralFalse: boolean;
-}
-
-function buildFieldMeta(shape: z.ZodRawShape): Map<string, FieldMeta> {
-  const meta = new Map<string, FieldMeta>();
-  for (const [key, schema] of Object.entries(shape)) {
-    const base = getBaseType(schema as z.ZodTypeAny);
-    meta.set(key, {
-      base,
-      isNumber: base.type === 'number',
-      hasLiteralFalse: base.enumValues?.includes('false') ?? false,
-    });
-  }
-  return meta;
-}
-
 /**
  * Manually parses argv against a Zod schema shape.
  * Handles: --flag (boolean true), --flag true|false, --flag value, --flag=value, --key.nested value
@@ -132,34 +209,16 @@ export function parseArgsFromSchema<T extends z.ZodRawShape>(
   shape: T,
   argv: string[],
 ): z.infer<z.ZodObject<T>> {
-  const fieldMeta = buildFieldMeta(shape);
-  const nestedShapes = new Map<string, z.ZodRawShape>();
-
-  // Collect nested object shapes
-  for (const [key, schema] of Object.entries(shape)) {
-    const zodSchema = schema as z.ZodTypeAny;
-    const base = getBaseType(zodSchema);
-    if (base.type === 'object') {
-      const innerDef = zodSchema._def;
-      const innerSchema =
-        innerDef.typeName === 'ZodOptional'
-          ? (innerDef.innerType as z.ZodObject<z.ZodRawShape>)
-          : (zodSchema as z.ZodObject<z.ZodRawShape>);
-      if (innerSchema._def?.typeName === 'ZodObject') {
-        nestedShapes.set(key, innerSchema.shape as z.ZodRawShape);
-      }
-    }
-  }
+  const flagSpecs = collectFlagSpecs(shape);
+  const flagSpecsByName = new Map(flagSpecs.map(spec => [spec.name, spec]));
 
   const result: Record<string, unknown> = {};
-  const nestedResults: Record<string, Record<string, unknown>> = {};
 
   let i = 0;
   while (i < argv.length) {
     const arg = argv[i]!;
     if (!arg.startsWith('--')) {
-      i++;
-      continue;
+      throw new Error(`Unexpected argument: ${arg}`);
     }
 
     let flagName: string;
@@ -173,60 +232,32 @@ export function parseArgsFromSchema<T extends z.ZodRawShape>(
       flagName = arg.slice(2);
     }
 
-    // Check for nested key (e.g., --info.license)
-    const dotIndex = flagName.indexOf('.');
-    if (dotIndex !== -1) {
-      const parent = flagName.slice(0, dotIndex);
-      const child = flagName.slice(dotIndex + 1);
-      const nestedShape = nestedShapes.get(parent);
-      if (nestedShape && child in nestedShape) {
-        const innerBase = getBaseType(nestedShape[child] as z.ZodTypeAny);
-        if (!nestedResults[parent]) nestedResults[parent] = {};
-        if (innerBase.type === 'boolean') {
-          const nextArg = inlineValue ?? argv[i + 1];
-          if (nextArg === 'true') { nestedResults[parent]![child] = true; i += inlineValue ? 1 : 2; }
-          else if (nextArg === 'false') { nestedResults[parent]![child] = false; i += inlineValue ? 1 : 2; }
-          else { nestedResults[parent]![child] = true; i++; }
-        } else {
-          const value = inlineValue ?? argv[++i];
-          nestedResults[parent]![child] = value;
-          i++;
-        }
-        continue;
-      }
+    const spec = flagSpecsByName.get(flagName);
+    if (!spec) {
+      throw new Error(`Unknown option: --${flagName}`);
     }
 
-    const meta = fieldMeta.get(flagName);
-    if (!meta) {
-      i++;
-      continue;
-    }
-
-    if (meta.base.type === 'boolean') {
+    if (spec.type === 'boolean') {
       const nextArg = inlineValue ?? argv[i + 1];
-      if (nextArg === 'true') { result[flagName] = true; i += inlineValue ? 1 : 2; }
-      else if (nextArg === 'false') { result[flagName] = false; i += inlineValue ? 1 : 2; }
-      else { result[flagName] = true; i++; }
-    } else {
-      const value = inlineValue ?? argv[++i];
-      if (value === undefined) { i++; continue; }
-      if (meta.isNumber) {
-        result[flagName] = Number(value);
-      } else if (meta.hasLiteralFalse && value === 'false') {
-        result[flagName] = false;
+      if (nextArg === 'true') {
+        setPathValue(result, spec.path, true);
+        i += inlineValue ? 1 : 2;
+      } else if (nextArg === 'false') {
+        setPathValue(result, spec.path, false);
+        i += inlineValue ? 1 : 2;
       } else {
-        result[flagName] = value;
+        setPathValue(result, spec.path, true);
+        i++;
       }
-      i++;
+    } else {
+      const value = inlineValue ?? argv[i + 1];
+      if (value === undefined || value.startsWith('--')) {
+        throw new Error(`Missing value for option: --${flagName}`);
+      }
+      setPathValue(result, spec.path, parseFlagValue(spec, value));
+      i += inlineValue ? 1 : 2;
     }
   }
 
-  // Merge nested results
-  for (const [parent, nested] of Object.entries(nestedResults)) {
-    if (Object.keys(nested).length > 0) {
-      result[parent] = nested;
-    }
-  }
-
-  return result as z.infer<z.ZodObject<T>>;
+  return z.object(shape).parse(result);
 }

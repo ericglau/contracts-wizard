@@ -55,8 +55,34 @@ test('solidity-erc20: boolean --flag true/false', t => {
 // --- Cairo ---
 
 test('cairo-erc20: basic', t => {
-  const output = run('cairo-erc20', '--name', 'TestToken', '--symbol', 'TST');
-  t.is(output, cairoErc20.print({ name: 'TestToken', symbol: 'TST' }));
+  const output = run(
+    'cairo-erc20',
+    '--name',
+    'TestToken',
+    '--symbol',
+    'TST',
+    '--access.type',
+    'false',
+    '--access.darInitialDelay',
+    '0',
+    '--access.darDefaultDelayIncrease',
+    '0',
+    '--access.darMaxTransferDelay',
+    '0',
+  );
+  t.is(
+    output,
+    cairoErc20.print({
+      name: 'TestToken',
+      symbol: 'TST',
+      access: {
+        type: false,
+        darInitialDelay: '0',
+        darDefaultDelayIncrease: '0',
+        darMaxTransferDelay: '0',
+      },
+    }),
+  );
 });
 
 // --- Stellar ---
@@ -84,6 +110,18 @@ test('confidential-erc7984: basic', t => {
 
 test('unknown command exits with error', t => {
   t.throws(() => run('nonexistent-command'), { message: /Unknown command/ });
+});
+
+test('unknown option exits with error', t => {
+  t.throws(() => run('solidity-erc20', '--name', 'TestToken', '--symbol', 'TST', '--notreal'), {
+    message: /Unknown option: --notreal/,
+  });
+});
+
+test('missing required option exits with error', t => {
+  t.throws(() => run('solidity-erc20', '--name', 'TestToken'), {
+    message: /symbol/i,
+  });
 });
 
 // --- Nested options ---
