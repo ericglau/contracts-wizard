@@ -16,17 +16,19 @@ import {
 } from '../../index';
 
 export const cairoCommonSchema = {
-  access: z.object({
-    type: z
-      .literal('ownable')
-      .or(z.literal('roles'))
-      .or(z.literal('roles-dar'))
-      .or(z.literal(false))
-      .describe(cairoAccessDescriptions.accessType),
-    darInitialDelay: z.string().describe(cairoAccessDescriptions.darInitialDelay),
-    darDefaultDelayIncrease: z.string().describe(cairoAccessDescriptions.darDefaultDelayIncrease),
-    darMaxTransferDelay: z.string().describe(cairoAccessDescriptions.darMaxTransferDelay),
-  }),
+  access: z
+    .object({
+      type: z
+        .literal('ownable')
+        .or(z.literal('roles'))
+        .or(z.literal('roles-dar'))
+        .or(z.literal(false))
+        .describe(cairoAccessDescriptions.accessType),
+      darInitialDelay: z.string().describe(cairoAccessDescriptions.darInitialDelay),
+      darDefaultDelayIncrease: z.string().describe(cairoAccessDescriptions.darDefaultDelayIncrease),
+      darMaxTransferDelay: z.string().describe(cairoAccessDescriptions.darMaxTransferDelay),
+    })
+    .optional(),
   upgradeable: z.boolean().optional().describe(cairoCommonDescriptions.upgradeable),
   info: z
     .object({

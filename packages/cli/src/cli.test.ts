@@ -55,34 +55,8 @@ test('solidity-erc20: boolean --flag true/false', t => {
 // --- Cairo ---
 
 test('cairo-erc20: basic', t => {
-  const output = run(
-    'cairo-erc20',
-    '--name',
-    'TestToken',
-    '--symbol',
-    'TST',
-    '--access.type',
-    'false',
-    '--access.darInitialDelay',
-    '0',
-    '--access.darDefaultDelayIncrease',
-    '0',
-    '--access.darMaxTransferDelay',
-    '0',
-  );
-  t.is(
-    output,
-    cairoErc20.print({
-      name: 'TestToken',
-      symbol: 'TST',
-      access: {
-        type: false,
-        darInitialDelay: '0',
-        darDefaultDelayIncrease: '0',
-        darMaxTransferDelay: '0',
-      },
-    }),
-  );
+  const output = run('cairo-erc20', '--name', 'TestToken', '--symbol', 'TST');
+  t.is(output, cairoErc20.print({ name: 'TestToken', symbol: 'TST' }));
 });
 
 // --- Stellar ---
