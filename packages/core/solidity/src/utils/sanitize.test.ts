@@ -1,82 +1,48 @@
 import test from 'ava';
-import { stringifyUnicodeSafe } from './sanitize';
+import { stringifyUnicodeSafe, validateSolidityString } from './sanitize';
+import { OptionsError } from '../error';
 
-test('stringifyUnicodeSafe', t => {
+test('stringifyUnicodeSafe encodes inputs into a Solidity string literal', t => {
   const cases = [
     {
       input: 'My Token',
       expected: '"My Token"',
-      description: 'should handle string with no special characters',
+      description: 'plain ASCII uses the regular literal form',
     },
     {
       input: 'MyToke"ć"',
       expected: 'unicode"MyToke\\"ć\\""',
-      description: 'should escape double quotes and wrap in unicode"" if unicode characters are present',
+      description: 'escapes double quotes and switches to unicode literal when non-ASCII present',
     },
     {
       input: '',
       expected: '""',
-      description: 'should handle empty string',
+      description: 'empty string',
     },
     {
       input: 'ć',
       expected: 'unicode"ć"',
-      description: 'should handle string with only unicode characters',
-    },
-    {
-      input: 'MyToken',
-      expected: '"MyToken"',
-      description: 'should handle string with no special characters',
+      description: 'BMP non-ASCII passes through raw inside unicode literal',
     },
     {
       input: 'MyTok"e"n',
       expected: '"MyTok\\"e\\"n"',
-      description: 'should handle escaped double quotes',
-    },
-    {
-      input: 'MyTokeć',
-      expected: 'unicode"MyTokeć"',
-      description: 'should handle string with mixed ASCII and unicode characters',
+      description: 'escapes double quotes in regular literal',
     },
     {
       input: 'Path\\file',
       expected: '"Path\\\\file"',
-      description: 'should escape backslash in ASCII branch',
+      description: 'escapes backslash in regular literal',
     },
     {
       input: 'é\\");',
       expected: 'unicode"é\\\\\\");"',
-      description: 'should escape backslash and quote together in unicode branch (no breakout)',
+      description: 'escapes backslash and quote together — closes the unicode breakout',
     },
     {
       input: '😀',
       expected: 'unicode"😀"',
-      description: 'should pass non-BMP characters through raw (no surrogate escapes)',
-    },
-    {
-      input: '\x7F',
-      expected: 'unicode"\x7F"',
-      description: 'should pass DEL through raw (allowed by unicode literal grammar)',
-    },
-    {
-      input: '\x00',
-      expected: 'unicode"\x00"',
-      description: 'should pass NUL through raw (allowed by unicode literal grammar)',
-    },
-    {
-      input: '\x08',
-      expected: 'unicode"\x08"',
-      description: 'should pass backspace through raw (no Solidity \\b escape exists)',
-    },
-    {
-      input: 'a\nb',
-      expected: 'unicode"a\\nb"',
-      description: 'should escape LF (excluded from raw unicode literal body)',
-    },
-    {
-      input: 'a\rb',
-      expected: 'unicode"a\\rb"',
-      description: 'should escape CR (excluded from raw unicode literal body)',
+      description: 'non-BMP code points pass through as raw UTF-8 (no surrogate escapes)',
     },
     {
       input: 'a\x0bb',
@@ -88,4 +54,42 @@ test('stringifyUnicodeSafe', t => {
   for (const { input, expected, description } of cases) {
     t.is(stringifyUnicodeSafe(input), expected, description);
   }
+});
+
+test('validateSolidityString rejects characters that cannot round-trip', t => {
+  const cases = [
+    { input: '\x00', description: 'NUL' },
+    { input: '\x08', description: 'backspace' },
+    { input: '\t', description: 'tab' },
+    { input: '\n', description: 'LF' },
+    { input: '\x0b', description: 'VT' },
+    { input: '\x0c', description: 'FF' },
+    { input: '\r', description: 'CR' },
+    { input: '\x1f', description: 'unit separator (last ASCII control)' },
+    { input: '\x7f', description: 'DEL' },
+    { input: '', description: 'NEL (Solidity line terminator)' },
+    { input: ' ', description: 'LS (Solidity line terminator)' },
+    { input: ' ', description: 'PS (Solidity line terminator)' },
+    { input: '\ud800', description: 'lone high surrogate' },
+    { input: '\udfff', description: 'lone low surrogate' },
+    { input: 'foo\ud800bar', description: 'lone surrogate inside otherwise-valid text' },
+  ];
+
+  for (const { input, description } of cases) {
+    const err = t.throws(() => validateSolidityString(input, 'name'), { instanceOf: OptionsError }, description);
+    t.truthy(err?.messages.name, `${description}: error attributes to 'name'`);
+  }
+});
+
+test('validateSolidityString accepts inputs Solidity can store', t => {
+  const cases = ['', 'My Token', 'MyToke"ć"', 'ć', '😀', 'é\\");', 'Path\\file'];
+  for (const input of cases) {
+    t.notThrows(() => validateSolidityString(input, 'name'), `accepts ${JSON.stringify(input)}`);
+  }
+});
+
+test('validateSolidityString attributes errors to the supplied field name', t => {
+  const err = t.throws(() => validateSolidityString('bad\x00', 'uri'), { instanceOf: OptionsError });
+  t.truthy(err?.messages.uri);
+  t.falsy(err?.messages.name);
 });

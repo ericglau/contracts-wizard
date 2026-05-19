@@ -10,6 +10,7 @@ import { withCommonDefaults, defaults as commonDefaults } from './common-options
 import { setUpgradeable } from './set-upgradeable';
 import { setInfo } from './set-info';
 import { printContract } from './print';
+import { validateSolidityString } from './utils/sanitize';
 
 export interface ERC1155Options extends CommonOptions {
   name: string;
@@ -54,6 +55,9 @@ export function isAccessControlRequired(opts: Partial<ERC1155Options>): boolean 
 
 export function buildERC1155(opts: ERC1155Options): Contract {
   const allOpts = withDefaults(opts);
+
+  validateSolidityString(allOpts.name, 'name');
+  validateSolidityString(allOpts.uri, 'uri');
 
   const c = new ContractBuilder(allOpts.name);
 

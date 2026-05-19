@@ -14,6 +14,7 @@ import { printContract } from './print';
 import type { ClockMode } from './set-clock-mode';
 import { clockModeDefault, setClockMode } from './set-clock-mode';
 import { setNamespacedStorage, toStorageStructInstantiation } from './set-namespaced-storage';
+import { validateSolidityString } from './utils/sanitize';
 
 export interface ERC721Options extends CommonOptions {
   name: string;
@@ -74,6 +75,9 @@ export function isAccessControlRequired(opts: Partial<ERC721Options>): boolean {
 
 export function buildERC721(opts: ERC721Options): Contract {
   const allOpts = withDefaults(opts);
+
+  validateSolidityString(allOpts.name, 'name');
+  validateSolidityString(allOpts.symbol, 'symbol');
 
   const c = new ContractBuilder(allOpts.name);
 

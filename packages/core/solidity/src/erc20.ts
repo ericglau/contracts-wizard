@@ -14,6 +14,7 @@ import { clockModeDefault, setClockMode } from './set-clock-mode';
 import { supportsInterface } from './common-functions';
 import { OptionsError } from './error';
 import { toUint256, UINT256_MAX } from './utils/convert-strings';
+import { validateSolidityString } from './utils/sanitize';
 import { setNamespacedStorage, toStorageStructInstantiation } from './set-namespaced-storage';
 
 export const crossChainBridgingOptions = [false, 'custom', 'erc7786native', 'superchain'] as const;
@@ -93,6 +94,9 @@ export function isAccessControlRequired(opts: Partial<ERC20Options>): boolean {
 
 export function buildERC20(opts: ERC20Options): ContractBuilder {
   const allOpts = withDefaults(opts);
+
+  validateSolidityString(allOpts.name, 'name');
+  validateSolidityString(allOpts.symbol, 'symbol');
 
   const c = new ContractBuilder(allOpts.name);
 
