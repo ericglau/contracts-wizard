@@ -170,13 +170,19 @@ ${this.getGitIgnoreHardhatIgnition()}`;
     return new TestGenerator(this).getContent(c, opts);
   }
 
-  public getDeploymentCall(c: Contract, args: string[]): string {
-    // TODO: remove that selector when the upgrades plugin supports @custom:oz-upgrades-unsafe-allow-reachable
-    const unsafeAllowConstructor = c.parents.find(p => ['EIP712'].includes(p.contract.name)) !== undefined;
+  /**
+   * Whether the proxy deployment needs `unsafeAllow: ['constructor']`.
+   *
+   * TODO: remove that selector when the upgrades plugin supports @custom:oz-upgrades-unsafe-allow-reachable
+   */
+  protected needsUnsafeAllowConstructor(c: Contract): boolean {
+    return c.parents.some(p => p.contract.name === 'EIP712');
+  }
 
+  public getDeploymentCall(c: Contract, args: string[]): string {
     return !c.upgradeable
       ? `ContractFactory.deploy(${args.join(', ')})`
-      : unsafeAllowConstructor
+      : this.needsUnsafeAllowConstructor(c)
         ? `upgrades.deployProxy(ContractFactory, [${args.join(', ')}], { unsafeAllow: ['constructor'] })`
         : `upgrades.deployProxy(ContractFactory, [${args.join(', ')}])`;
   }
@@ -322,8 +328,47 @@ ${c.upgradeable ? 'npx hardhat run --network <network-name> scripts/deploy.ts' :
  * exposes them through a network connection: `ethers` comes from `hre.network.create()` and the
  * upgrades API is obtained via `upgrades(hre, connection)`.
  */
-class Hardhat3TestGenerator {
-  constructor(private parent: Hardhat3ZipGenerator) {}
+export class Hardhat3TestGenerator {
+  constructor(protected parent: Hardhat3ZipGenerator) {}
+
+  /** Module the `upgrades` helper is imported from. */
+  protected getUpgradesImportSpecifier(): string {
+    return '@openzeppelin/hardhat-upgrades';
+  }
+
+  /** Name of the client destructured off the network connection. */
+  protected getClientBinding(): string {
+    return 'ethers';
+  }
+
+  /** Lines setting up a contract factory, if the client needs one before deploying. */
+  protected getFactoryLines(c: Contract): Lines[] {
+    return [`const ContractFactory = await ethers.getContractFactory("${c.name}");`];
+  }
+
+  /** Lines run after the deployment call, e.g. waiting for the transaction to settle. */
+  protected getPostDeployLines(): string[] {
+    return ['await instance.waitForDeployment();'];
+  }
+
+  /** Expression evaluating to the deployed contract's address. */
+  protected getAddressExpression(): string {
+    return 'await instance.getAddress()';
+  }
+
+  /**
+   * Expression calling a read-only method on the deployed contract.
+   *
+   * `args` holds numeric literals, which viem renders as bigints (see the viem override).
+   */
+  protected getReadCall(name: string, args: string[]): string {
+    return `instance.${name}(${args.join(', ')})`;
+  }
+
+  /** Expression evaluating to the address of the i-th test account. */
+  protected getSignerAddressExpression(i: number): string {
+    return `(await ethers.getSigners())[${i}].address`;
+  }
 
   getContent(c: Contract, opts?: GenericOptions): string {
     return formatLinesWithSpaces(
@@ -340,13 +385,16 @@ class Hardhat3TestGenerator {
   private getImports(c: Contract): Lines[] {
     const imports = ['import test from "ava";', 'import hre from "hardhat";'];
     if (c.upgradeable) {
-      imports.push('import { upgrades } from "@openzeppelin/hardhat-upgrades";');
+      imports.push(`import { upgrades } from "${this.getUpgradesImportSpecifier()}";`);
     }
     return imports;
   }
 
   private getConnectionSetup(c: Contract): Lines[] {
-    const lines = ['const connection = await hre.network.create();', 'const { ethers } = connection;'];
+    const lines = [
+      'const connection = await hre.network.create();',
+      `const { ${this.getClientBinding()} } = connection;`,
+    ];
     if (c.upgradeable) {
       lines.push('const upgradesApi = await upgrades(hre, connection);');
     }
@@ -358,7 +406,7 @@ class Hardhat3TestGenerator {
     return [
       `test("${c.name}", async t => {`,
       spaceBetween(
-        [`const ContractFactory = await ethers.getContractFactory("${c.name}");`],
+        this.getFactoryLines(c),
         this.declareVariables(c.constructorArgs),
         this.getDeployLines(c, argNames),
         this.getAssertions(c, opts),
@@ -375,7 +423,7 @@ class Hardhat3TestGenerator {
     }
     const expects = this.getExpects(opts);
     // AVA fails a test that runs no assertions, so fall back to a deployment sanity check.
-    return expects.length > 0 ? expects : ['t.truthy(await instance.getAddress());'];
+    return expects.length > 0 ? expects : [`t.truthy(${this.getAddressExpression()});`];
   }
 
   private getExpects(opts?: GenericOptions): Lines[] {
@@ -383,9 +431,9 @@ class Hardhat3TestGenerator {
       switch (opts.kind) {
         case 'ERC20':
         case 'ERC721':
-          return [`t.is(await instance.name(), ${JSON.stringify(opts.name)});`];
+          return [`t.is(await ${this.getReadCall('name', [])}, ${JSON.stringify(opts.name)});`];
         case 'ERC1155':
-          return [`t.is(await instance.uri(0), ${JSON.stringify(opts.uri)});`];
+          return [`t.is(await ${this.getReadCall('uri', ['0'])}, ${JSON.stringify(opts.uri)});`];
         case 'Account':
         case 'Governor':
         case 'Custom':
@@ -400,7 +448,7 @@ class Hardhat3TestGenerator {
   private declareVariables(args: FunctionArgument[]): Lines[] {
     return args.flatMap((arg, i) => {
       if (arg.type === 'address') {
-        return [`const ${arg.name} = (await ethers.getSigners())[${i}].address;`];
+        return [`const ${arg.name} = ${this.getSignerAddressExpression(i)};`];
       } else {
         return [`// TODO: Set the following constructor argument`, `// const ${arg.name} = ...;`];
       }
@@ -408,18 +456,17 @@ class Hardhat3TestGenerator {
   }
 
   private getDeployLines(c: Contract, argNames: string[]): Lines[] {
+    const deployLines = [
+      `const instance = await ${this.parent.getDeploymentCall(c, argNames)};`,
+      ...this.getPostDeployLines(),
+    ];
     if (c.constructorArgs.some(a => a.type !== 'address')) {
       return [
         `// TODO: Uncomment the below when the missing constructor arguments are set above`,
-        `// const instance = await ${this.parent.getDeploymentCall(c, argNames)};`,
-        `// await instance.waitForDeployment();`,
-      ];
-    } else {
-      return [
-        `const instance = await ${this.parent.getDeploymentCall(c, argNames)};`,
-        'await instance.waitForDeployment();',
+        ...deployLines.map(line => `// ${line}`),
       ];
     }
+    return deployLines;
   }
 }
 
@@ -431,8 +478,9 @@ class Hardhat3TestGenerator {
  * projects use `@openzeppelin/hardhat-upgrades` v4 (which targets Hardhat 3).
  */
 export class Hardhat3ZipGenerator extends HardhatZipGenerator {
-  protected getHardhatConfig(upgradeable: boolean): string {
-    const { imports, plugins } = upgradeable
+  /** The plugin imports and the `plugins` array they populate, which vary per client. */
+  protected getConfigPlugins(upgradeable: boolean): { imports: string; plugins: string } {
+    return upgradeable
       ? {
           imports: 'import hardhatUpgrades from "@openzeppelin/hardhat-upgrades";',
           plugins: '[hardhatUpgrades]',
@@ -443,6 +491,10 @@ export class Hardhat3ZipGenerator extends HardhatZipGenerator {
             'import hardhatIgnitionEthers from "@nomicfoundation/hardhat-ignition-ethers";',
           plugins: '[hardhatEthers, hardhatIgnitionEthers]',
         };
+  }
+
+  protected getHardhatConfig(upgradeable: boolean): string {
+    const { imports, plugins } = this.getConfigPlugins(upgradeable);
 
     return `\
 import { defineConfig } from "hardhat/config";
@@ -467,13 +519,38 @@ export default defineConfig({
     return new Hardhat3TestGenerator(this).getContent(c, opts);
   }
 
-  public getDeploymentCall(c: Contract, args: string[]): string {
-    // TODO: remove that selector when the upgrades plugin supports @custom:oz-upgrades-unsafe-allow-reachable
-    const unsafeAllowConstructor = c.parents.find(p => ['EIP712'].includes(p.contract.name)) !== undefined;
+  /**
+   * Deploy-script fragments that vary per client. Each is spliced into the script template
+   * verbatim, so a client that does not need a fragment returns an empty string.
+   */
+  protected getScriptUpgradesImportSpecifier(): string {
+    return '@openzeppelin/hardhat-upgrades';
+  }
 
+  /** Client destructured off the connection, as an indented line (or empty). */
+  protected getScriptClientLine(): string {
+    return '  const { ethers } = connection;\n';
+  }
+
+  /** Contract-factory setup, as a leading blank line plus indented lines (or empty). */
+  protected getScriptFactorySection(c: Contract): string {
+    return `\n  const ContractFactory = await ethers.getContractFactory("${c.name}");\n`;
+  }
+
+  /** Lines run after the deployment call, prefixed with a newline (or empty). */
+  protected getScriptPostDeploySection(): string {
+    return '\n  await instance.waitForDeployment();';
+  }
+
+  /** Expression evaluating to the deployed proxy's address. */
+  protected getScriptAddressExpression(): string {
+    return 'await instance.getAddress()';
+  }
+
+  public getDeploymentCall(c: Contract, args: string[]): string {
     return !c.upgradeable
       ? `ContractFactory.deploy(${args.join(', ')})`
-      : unsafeAllowConstructor
+      : this.needsUnsafeAllowConstructor(c)
         ? `upgradesApi.deployProxy(ContractFactory, [${args.join(', ')}], { unsafeAllow: ['constructor'] })`
         : `upgradesApi.deployProxy(ContractFactory, [${args.join(', ')}])`;
   }
@@ -485,23 +562,19 @@ export default defineConfig({
 
     return `\
 import hre from "hardhat";
-import { upgrades } from "@openzeppelin/hardhat-upgrades";
+import { upgrades } from "${this.getScriptUpgradesImportSpecifier()}";
 
 async function main() {
   const connection = await hre.network.create();
-  const { ethers } = connection;
-  const upgradesApi = await upgrades(hre, connection);
-
-  const ContractFactory = await ethers.getContractFactory("${c.name}");
-
+${this.getScriptClientLine()}  const upgradesApi = await upgrades(hre, connection);
+${this.getScriptFactorySection(c)}
   ${c.constructorArgs.length > 0 ? '// TODO: Set values for the constructor arguments below' : ''}
   const instance = await ${this.getDeploymentCall(
     c,
     c.constructorArgs.map(a => a.name),
-  )};
-  await instance.waitForDeployment();
+  )};${this.getScriptPostDeploySection()}
 
-  console.log(\`Proxy deployed to \${await instance.getAddress()}\`);
+  console.log(\`Proxy deployed to \${${this.getScriptAddressExpression()}}\`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

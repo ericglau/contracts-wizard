@@ -1,106 +1,45 @@
 import type { GenericOptions } from './build-generic';
-import type { Contract, FunctionArgument } from './contract';
+import type { Contract } from './contract';
 import type { Lines } from './utils/format-lines';
-import { formatLinesWithSpaces, spaceBetween } from './utils/format-lines';
-import { Hardhat3ZipGenerator } from './zip-hardhat';
-import SOLIDITY_VERSION from './solidity-version.json';
+import { Hardhat3TestGenerator, Hardhat3ZipGenerator } from './zip-hardhat';
 import type JSZip from 'jszip';
 
+const UPGRADES_IMPORT_SPECIFIER = '@openzeppelin/hardhat-upgrades/viem';
+
 /**
- * Generates the `test/test.ts` file for a Hardhat 3 + viem project, using AVA as the test runner.
+ * Generates the `test/test.ts` file for a Hardhat 3 + viem project.
  *
- * Uses `connection.viem` from `@nomicfoundation/hardhat-viem` for non-upgradeable deploys, and
- * `@openzeppelin/hardhat-upgrades/viem` for upgradeable proxies.
+ * Differs from the ethers variant in that viem deploys without a contract factory, exposes reads
+ * under `instance.read.*` with bigint arguments, and returns an already-resolved `instance.address`.
  */
-class Hardhat3ViemTestGenerator {
-  constructor(private parent: Hardhat3ViemZipGenerator) {}
-
-  getContent(c: Contract, opts?: GenericOptions): string {
-    return formatLinesWithSpaces(
-      2,
-      ...spaceBetween(
-        this.getImports(c),
-        this.getConnectionSetup(c),
-        ['test.after.always(() => connection.close());'],
-        this.getTestCase(c, opts),
-      ),
-    );
+class Hardhat3ViemTestGenerator extends Hardhat3TestGenerator {
+  protected getUpgradesImportSpecifier(): string {
+    return UPGRADES_IMPORT_SPECIFIER;
   }
 
-  private getImports(c: Contract): Lines[] {
-    const imports = ['import test from "ava";', 'import hre from "hardhat";'];
-    if (c.upgradeable) {
-      imports.push('import { upgrades } from "@openzeppelin/hardhat-upgrades/viem";');
-    }
-    return imports;
+  protected getClientBinding(): string {
+    return 'viem';
   }
 
-  private getConnectionSetup(c: Contract): Lines[] {
-    const lines = ['const connection = await hre.network.create();', 'const { viem } = connection;'];
-    if (c.upgradeable) {
-      lines.push('const upgradesApi = await upgrades(hre, connection);');
-    }
-    return lines;
-  }
-
-  private getTestCase(c: Contract, opts?: GenericOptions): Lines[] {
-    const argNames = c.constructorArgs.map(a => a.name);
-    return [
-      `test("${c.name}", async t => {`,
-      spaceBetween(this.declareVariables(c.constructorArgs), this.getDeployLines(c, argNames), this.getAssertions(c, opts)),
-      '});',
-    ];
-  }
-
-  private getAssertions(c: Contract, opts?: GenericOptions): Lines[] {
-    if (c.constructorArgs.some(a => a.type !== 'address')) {
-      // The deployment is commented out until the user fills in the missing constructor arguments,
-      // so there is no `instance` to assert against yet. `t.pass()` keeps AVA happy in the meantime.
-      return ['t.pass();'];
-    }
-    const expects = this.getExpects(opts);
-    // AVA fails a test that runs no assertions, so fall back to a deployment sanity check.
-    return expects.length > 0 ? expects : ['t.truthy(instance.address);'];
-  }
-
-  private getExpects(opts?: GenericOptions): Lines[] {
-    if (opts !== undefined) {
-      switch (opts.kind) {
-        case 'ERC20':
-        case 'ERC721':
-          return [`t.is(await instance.read.name(), ${JSON.stringify(opts.name)});`];
-        case 'ERC1155':
-          return [`t.is(await instance.read.uri([0n]), ${JSON.stringify(opts.uri)});`];
-        case 'Account':
-        case 'Governor':
-        case 'Custom':
-          break;
-        default:
-          throw new Error('Unknown ERC');
-      }
-    }
+  protected getFactoryLines(): Lines[] {
     return [];
   }
 
-  private declareVariables(args: FunctionArgument[]): Lines[] {
-    return args.flatMap((arg, i) => {
-      if (arg.type === 'address') {
-        return [`const ${arg.name} = (await viem.getWalletClients())[${i}].account.address;`];
-      } else {
-        return [`// TODO: Set the following constructor argument`, `// const ${arg.name} = ...;`];
-      }
-    });
+  protected getPostDeployLines(): string[] {
+    return [];
   }
 
-  private getDeployLines(c: Contract, argNames: string[]): Lines[] {
-    if (c.constructorArgs.some(a => a.type !== 'address')) {
-      return [
-        `// TODO: Uncomment the below when the missing constructor arguments are set above`,
-        `// const instance = await ${this.parent.getDeploymentCall(c, argNames)};`,
-      ];
-    } else {
-      return [`const instance = await ${this.parent.getDeploymentCall(c, argNames)};`];
-    }
+  protected getAddressExpression(): string {
+    return 'instance.address';
+  }
+
+  protected getReadCall(name: string, args: string[]): string {
+    const argsList = args.length > 0 ? `[${args.map(arg => `${arg}n`).join(', ')}]` : '';
+    return `instance.read.${name}(${argsList})`;
+  }
+
+  protected getSignerAddressExpression(i: number): string {
+    return `(await viem.getWalletClients())[${i}].account.address`;
   }
 }
 
@@ -111,38 +50,17 @@ class Hardhat3ViemTestGenerator {
  * extension. Upgradeable projects use `@openzeppelin/hardhat-upgrades/viem`.
  */
 export class Hardhat3ViemZipGenerator extends Hardhat3ZipGenerator {
-  protected getHardhatConfig(upgradeable: boolean): string {
-    const { imports, plugins } = upgradeable
+  protected getConfigPlugins(upgradeable: boolean): { imports: string; plugins: string } {
+    const viemImport = 'import hardhatViem from "@nomicfoundation/hardhat-viem";\n';
+    return upgradeable
       ? {
-          imports:
-            'import hardhatViem from "@nomicfoundation/hardhat-viem";\n' +
-            'import hardhatUpgrades from "@openzeppelin/hardhat-upgrades/viem";',
+          imports: viemImport + `import hardhatUpgrades from "${UPGRADES_IMPORT_SPECIFIER}";`,
           plugins: '[hardhatViem, hardhatUpgrades]',
         }
       : {
-          imports:
-            'import hardhatViem from "@nomicfoundation/hardhat-viem";\n' +
-            'import hardhatIgnitionViem from "@nomicfoundation/hardhat-ignition-viem";',
+          imports: viemImport + 'import hardhatIgnitionViem from "@nomicfoundation/hardhat-ignition-viem";',
           plugins: '[hardhatViem, hardhatIgnitionViem]',
         };
-
-    return `\
-import { defineConfig } from "hardhat/config";
-${imports}
-
-export default defineConfig({
-  plugins: ${plugins},
-  solidity: {
-    version: "${SOLIDITY_VERSION}",
-    settings: {
-      evmVersion: 'cancun',
-      optimizer: {
-        enabled: true,
-      },
-    },
-  },
-});
-`;
   }
 
   protected getTest(c: Contract, opts?: GenericOptions): string {
@@ -150,50 +68,37 @@ export default defineConfig({
   }
 
   public getDeploymentCall(c: Contract, args: string[]): string {
-    // TODO: remove that selector when the upgrades plugin supports @custom:oz-upgrades-unsafe-allow-reachable
-    const unsafeAllowConstructor = c.parents.find(p => ['EIP712'].includes(p.contract.name)) !== undefined;
     const argsList = args.join(', ');
 
     if (!c.upgradeable) {
-      return args.length === 0
-        ? `viem.deployContract("${c.name}")`
-        : `viem.deployContract("${c.name}", [${argsList}])`;
+      return `viem.deployContract("${c.name}"${args.length > 0 ? `, [${argsList}]` : ''})`;
     }
 
-    return unsafeAllowConstructor
+    return this.needsUnsafeAllowConstructor(c)
       ? `upgradesApi.deployProxy("${c.name}", [${argsList}], { unsafeAllow: ['constructor'] })`
       : `upgradesApi.deployProxy("${c.name}", [${argsList}])`;
   }
 
-  protected getScript(c: Contract): string {
-    // Deploy scripts are only generated for upgradeable contracts; non-upgradeable
-    // projects use a Hardhat Ignition module instead (see zipHardhat).
-    if (!c.upgradeable) throw new Error('Deploy script is only used for upgradeable contracts');
+  protected getScriptUpgradesImportSpecifier(): string {
+    return UPGRADES_IMPORT_SPECIFIER;
+  }
 
-    return `\
-import hre from "hardhat";
-import { upgrades } from "@openzeppelin/hardhat-upgrades/viem";
+  // viem's deploy helpers take the connection's `viem` client implicitly via `upgradesApi`, so the
+  // script needs neither a client binding nor a contract factory, and deploys resolve eagerly.
+  protected getScriptClientLine(): string {
+    return '';
+  }
 
-async function main() {
-  const connection = await hre.network.create();
-  const upgradesApi = await upgrades(hre, connection);
+  protected getScriptFactorySection(): string {
+    return '';
+  }
 
-  ${c.constructorArgs.length > 0 ? '// TODO: Set values for the constructor arguments below' : ''}
-  const instance = await ${this.getDeploymentCall(
-    c,
-    c.constructorArgs.map(a => a.name),
-  )};
+  protected getScriptPostDeploySection(): string {
+    return '';
+  }
 
-  console.log(\`Proxy deployed to \${instance.address}\`);
-}
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
-`;
+  protected getScriptAddressExpression(): string {
+    return 'instance.address';
   }
 
   protected async getPackageJson(c: Contract): Promise<unknown> {

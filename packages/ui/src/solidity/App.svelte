@@ -34,8 +34,9 @@
     OptionsError,
   } from '@openzeppelin/wizard';
   import { getImports } from '@openzeppelin/wizard/get-imports';
-  import { postConfig } from '../common/post-config';
+  import { postConfig, type DownloadAction } from '../common/post-config';
   import { remixURL } from './remix';
+  import type JSZip from 'jszip';
 
   import { saveAs } from 'file-saver';
   import { injectHyperlinks } from './inject-hyperlinks';
@@ -141,18 +142,21 @@
       downloadHardhatViem: true,
       downloadFoundry: true,
     };
+    // Development package downloads are all-or-nothing per contract kind; only the `omit*`
+    // overrides below distinguish between the individual environments.
+    const omitDevPackages = () => {
+      result.downloadHardhat = false;
+      result.downloadHardhatViem = false;
+      result.downloadFoundry = false;
+    };
     switch (opts?.kind) {
       case 'Governor':
-        result.downloadHardhat = false;
-        result.downloadHardhatViem = false;
-        result.downloadFoundry = false;
+        omitDevPackages();
         break;
       case 'Stablecoin':
       case 'RealWorldAsset':
         result.openInRemix = false;
-        result.downloadHardhat = false;
-        result.downloadHardhatViem = false;
-        result.downloadFoundry = false;
+        omitDevPackages();
         break;
     }
     if (overrides.omitZipHardhat(opts)) {
@@ -206,6 +210,14 @@
     }
   };
 
+  const saveProjectZip = async (zip: JSZip, action: DownloadAction) => {
+    const blob = await zip.generateAsync({ type: 'blob' });
+    saveAs(blob, 'project.zip');
+    if (opts) {
+      await postConfig(opts, action, language);
+    }
+  };
+
   const zipHardhatModule = import('@openzeppelin/wizard/zip-env-hardhat');
 
   const downloadHardhatHandler = async () => {
@@ -214,35 +226,21 @@
       overrides.overrideZipHardhat !== undefined
         ? await overrides.overrideZipHardhat(contract, opts)
         : await zipHardhat(contract, opts);
-    const blob = await zip.generateAsync({ type: 'blob' });
-    saveAs(blob, 'project.zip');
-    if (opts) {
-      await postConfig(opts, 'download-hardhat', language);
-    }
+    await saveProjectZip(zip, 'download-hardhat');
   };
 
   const zipHardhatViemModule = import('@openzeppelin/wizard/zip-env-hardhat-viem');
 
   const downloadHardhatViemHandler = async () => {
     const { zipHardhatViem } = await zipHardhatViemModule;
-    const zip = await zipHardhatViem(contract, opts);
-    const blob = await zip.generateAsync({ type: 'blob' });
-    saveAs(blob, 'project.zip');
-    if (opts) {
-      await postConfig(opts, 'download-hardhat-viem', language);
-    }
+    await saveProjectZip(await zipHardhatViem(contract, opts), 'download-hardhat-viem');
   };
 
   const zipFoundryModule = import('@openzeppelin/wizard/zip-env-foundry');
 
   const downloadFoundryHandler = async () => {
     const { zipFoundry } = await zipFoundryModule;
-    const zip = await zipFoundry(contract, opts);
-    const blob = await zip.generateAsync({ type: 'blob' });
-    saveAs(blob, 'project.zip');
-    if (opts) {
-      await postConfig(opts, 'download-foundry', language);
-    }
+    await saveProjectZip(await zipFoundry(contract, opts), 'download-foundry');
   };
 
   const applyFunctionCall = ({ detail: aiFunctionCall }: CustomEvent<AiFunctionCall<'solidity'>>) => {

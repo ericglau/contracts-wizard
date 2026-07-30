@@ -54,9 +54,8 @@
     align-items: center;
   }
 
-  .type-icon :global(.icon),
-  .action :global(.icon) {
-    margin-top: 0;
+  .action {
+    color: var(--gray-4);
   }
 
   .copy {
@@ -75,10 +74,6 @@
     margin-top: var(--size-1);
     color: var(--gray-5);
     font-size: var(--text-small);
-  }
-
-  .action {
-    color: var(--gray-4);
   }
 
   .download-option:hover .action,

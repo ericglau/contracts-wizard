@@ -13,14 +13,15 @@
     "/src",
     "openzeppelin-contracts-version.json",
     "openzeppelin-contracts-version.json.d.ts",
-    "!**/*.test.*"
+    "!**/*.test.*",
+    "!**/*-test-suite.*"
   ],
   "scripts": {
     "prepublish": "rimraf dist *.tsbuildinfo && hardhat clean",
     "test": "ava",
     "test:update-snapshots": "ava --update-snapshots",
     "test:watch": "ava --watch",
-    "update-env": "rm -f ./src/environments/hardhat/package-lock.json && npm install --package-lock-only --prefix ./src/environments/hardhat && rm -f ./src/environments/hardhat/upgradeable/package-lock.json && npm install --package-lock-only --prefix ./src/environments/hardhat/upgradeable && rm -f ./src/environments/hardhat-viem/package-lock.json && npm install --package-lock-only --prefix ./src/environments/hardhat-viem && rm -f ./src/environments/hardhat-viem/upgradeable/package-lock.json && npm install --package-lock-only --prefix ./src/environments/hardhat-viem/upgradeable",
+    "update-env": "for d in hardhat hardhat/upgradeable hardhat-viem hardhat-viem/upgradeable; do rm -f \"./src/environments/$d/package-lock.json\" && npm install --package-lock-only --prefix \"./src/environments/$d\" || exit 1; done",
     "prepare": "tsc && node dist/scripts/prepare.js"
   },
   "dependencies": {
