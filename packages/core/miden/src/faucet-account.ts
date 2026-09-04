@@ -1,0 +1,527 @@
+import type { ContractBuilder } from './contract';
+import type { Access, Restrictions } from './common-options';
+import type { Lines } from './utils/format-lines';
+import { bullet, paragraph } from './utils/doc';
+
+export type FaucetKind = 'Fungible' | 'NonFungible';
+
+export interface FaucetFeatures {
+  kind: FaucetKind;
+  /** Whether any holder can burn the asset by sending it back to the faucet. Otherwise only the owner can. */
+  burnable: boolean;
+  pausable: boolean;
+  restrictions: Restrictions;
+  /** Whether the faucet exposes authority-gated metadata setters that are usable after deployment. */
+  updatableMetadata: boolean;
+}
+
+interface RoleAssignment {
+  /** Name of the associated constant holding the role symbol, e.g. `PAUSER_ROLE`. */
+  constant: string;
+  /** The role symbol. */
+  symbol: string;
+  /** Local variable holding the parsed `RoleSymbol`. */
+  variable: string;
+  comment: string;
+  /** Expressions evaluating to the procedure roots gated by the role. */
+  procedureRoots: string[];
+}
+
+/**
+ * Adds the documentation, token policy manager, access control and account creation function of a faucet
+ * account to the contract. The kind-specific `faucet()` function and constants must be added beforehand.
+ */
+export function addFaucetAccount(c: ContractBuilder, access: Access, features: FaucetFeatures): void {
+  addDocumentation(c, access, features);
+  addTokenPolicyManager(c, access, features);
+
+  if (access === false) {
+    addUserAccountCreation(c, features);
+  } else {
+    if (access === 'roles') {
+      addProcedureRoles(c, features);
+    }
+    addAllowedNotes(c, access, features);
+    addFeePolicyManager(c);
+    addNetworkAccountCreation(c, access, features);
+  }
+}
+
+function assetNoun(kind: FaucetKind, plural = true): string {
+  if (kind === 'Fungible') {
+    return plural ? 'tokens' : 'token';
+  } else {
+    return plural ? 'NFTs' : 'NFT';
+  }
+}
+
+function addDocumentation(c: ContractBuilder, access: Access, features: FaucetFeatures): void {
+  const name = c.name.stringLiteral;
+  const intro =
+    features.kind === 'Fungible'
+      ? `Fungible faucet account issuing the \`${name}\` token.`
+      : `Non-fungible faucet account issuing the \`${name}\` NFT collection.`;
+
+  let model: string;
+  switch (access) {
+    case false:
+      model =
+        'The faucet is a user account authenticated by a single signature: every transaction, including ' +
+        'minting, must be signed by the key holder, who is the sole authority over the configuration of the faucet.';
+      break;
+    case 'ownable':
+      model =
+        'The faucet is a network account: the network consumes the MINT, BURN and config notes sent to it, ' +
+        'and the privileged procedures are gated by the owner account, with two-step ownership transfer.';
+      break;
+    case 'roles':
+      model =
+        'The faucet is a network account: the network consumes the MINT, BURN and config notes sent to it, ' +
+        'and the privileged procedures are gated by role-based access control. Minting and burning are ' +
+        'gated by owner-only policies, which check the `Ownable2Step` owner.';
+      break;
+    default: {
+      const _: never = access;
+      throw new Error('Unknown value for `access`');
+    }
+  }
+
+  for (const line of [...paragraph(intro, 0), '', ...paragraph(model, 0)]) {
+    c.addDocumentation(line);
+  }
+}
+
+function addTokenPolicyManager(c: ContractBuilder, access: Access, features: FaucetFeatures): void {
+  const { kind, burnable, restrictions } = features;
+  const nouns = assetNoun(kind);
+
+  c.addUseClause('miden_standards::account::policies', 'TokenPolicyManager');
+  c.addUseClause('miden_standards::account::policies', 'MintPolicy');
+  c.addUseClause('miden_standards::account::policies', 'BurnPolicy');
+
+  const mintPolicy = access === false ? 'MintPolicy::allow_all()' : 'MintPolicy::owner_only()';
+  const mintDoc =
+    access === false
+      ? `Minting: every mint is accepted once the transaction is authenticated by the signature of the key holder.`
+      : `Minting: only the owner can mint, by sending a MINT note to the faucet.`;
+
+  const burnPolicy = burnable ? 'BurnPolicy::allow_all()' : 'BurnPolicy::owner_only()';
+  const burnDoc = burnable
+    ? `Burning: any holder can burn ${nouns} by sending them back to the faucet in a BURN note.`
+    : `Burning: only the owner can burn ${nouns}, by sending them back to the faucet in a BURN note.`;
+
+  const chain: Lines[] = [`.active_mint_policy(${mintPolicy})`, `.active_burn_policy(${burnPolicy})`];
+
+  let transferDoc: string;
+  switch (restrictions) {
+    case false:
+      transferDoc = 'Transfers: unrestricted, so asset callbacks are disabled for the faucet.';
+      break;
+    case 'allowlist':
+      c.addUseClause('miden_standards::account::policies', 'TransferPolicy');
+      chain.push(
+        '.active_send_policy(TransferPolicy::empty_basic_allowlist())',
+        '.active_receive_policy(TransferPolicy::empty_basic_allowlist())',
+      );
+      transferDoc = `Transfers: only accounts on the allowlist can send or receive the ${nouns}.`;
+      break;
+    case 'blocklist':
+      c.addUseClause('miden_standards::account::policies', 'TransferPolicy');
+      chain.push(
+        '.active_send_policy(TransferPolicy::empty_basic_blocklist())',
+        '.active_receive_policy(TransferPolicy::empty_basic_blocklist())',
+      );
+      transferDoc = `Transfers: accounts on the blocklist can neither send nor receive the ${nouns}.`;
+      break;
+    default: {
+      const _: never = restrictions;
+      throw new Error('Unknown value for `restrictions`');
+    }
+  }
+  chain.push('.build()');
+
+  c.addFunction({
+    name: 'token_policy_manager',
+    comments: [
+      ...paragraph('Returns the token policy manager gating minting, burning and transfers.', 1),
+      '',
+      ...bullet(mintDoc, 1),
+      ...bullet(burnDoc, 1),
+      ...bullet(transferDoc, 1),
+    ],
+    args: [],
+    returns: 'TokenPolicyManager',
+    code: ['TokenPolicyManager::builder()', chain],
+    pub: true,
+  });
+}
+
+/**
+ * Returns the components installed on the account for the selected features, in installation order, together
+ * with the `use` declarations they need.
+ */
+function featureComponents(c: ContractBuilder, features: FaucetFeatures): string[] {
+  const components: string[] = [];
+
+  switch (features.restrictions) {
+    case false:
+      break;
+    case 'allowlist':
+      c.addUseClause('miden_standards::account::policies', 'AllowlistManager');
+      components.push('.with_component(AllowlistManager)');
+      break;
+    case 'blocklist':
+      c.addUseClause('miden_standards::account::policies', 'BlocklistManager');
+      components.push('.with_component(BlocklistManager)');
+      break;
+    default: {
+      const _: never = features.restrictions;
+      throw new Error('Unknown value for `restrictions`');
+    }
+  }
+
+  if (features.pausable) {
+    c.addUseClause('miden_standards::account::access', 'Pausable');
+    c.addUseClause('miden_standards::account::access', 'PausableManager');
+    components.push('.with_component(Pausable::unpaused())', '.with_component(PausableManager)');
+  }
+
+  return components;
+}
+
+const INIT_SEED_DOC =
+  '`init_seed`: seed the account ID is derived from; use a cryptographically secure random number generator.';
+
+function addUserAccountCreation(c: ContractBuilder, features: FaucetFeatures): void {
+  c.addUseClause('miden_protocol::account', 'Account');
+  c.addUseClause('miden_protocol::account', 'AccountBuilder');
+  c.addUseClause('miden_protocol::account', 'AccountType');
+  c.addUseClause('miden_protocol::account::auth', 'PublicKey');
+  c.addUseClause('miden_protocol::errors', 'AccountError');
+  c.addUseClause('miden_standards::account::access', 'Authority');
+  c.addUseClause('miden_standards::account::auth', 'AuthSingleSig');
+
+  const chain: string[] = [
+    '.account_type(account_type)',
+    '.with_component(AuthSingleSig::from_public_key(public_key))',
+    '.with_component(Self::faucet())',
+    '.with_component(Authority::AuthControlled)',
+    '.with_components(Self::token_policy_manager())',
+    ...featureComponents(c, features),
+    '.build()',
+  ];
+
+  c.addFunction({
+    name: 'create',
+    comments: [
+      ...paragraph('Creates the faucet as a user account controlled by the holder of `public_key`.', 1),
+      '',
+      '# Arguments',
+      '',
+      ...bullet(INIT_SEED_DOC, 1),
+      ...bullet(
+        '`public_key`: public key of the single-signature authentication component. Every transaction of ' +
+          'the faucet, including minting, must be signed with the matching secret key.',
+        1,
+      ),
+      ...bullet('`account_type`: whether the account state is stored on-chain (public) or off-chain (private).', 1),
+    ],
+    args: [
+      { name: 'init_seed', type: '[u8; 32]' },
+      { name: 'public_key', type: 'PublicKey' },
+      { name: 'account_type', type: 'AccountType' },
+    ],
+    returns: 'Result<Account, AccountError>',
+    code: ['AccountBuilder::new(init_seed)', chain],
+    pub: true,
+  });
+}
+
+function roleAssignments(features: FaucetFeatures): RoleAssignment[] {
+  const roles: RoleAssignment[] = [];
+
+  if (features.pausable) {
+    roles.push({
+      constant: 'PAUSER_ROLE',
+      symbol: 'PAUSER',
+      variable: 'pauser',
+      comment: 'Role allowed to pause and unpause the faucet.',
+      procedureRoots: ['PausableManager::pause_root()', 'PausableManager::unpause_root()'],
+    });
+  }
+
+  switch (features.restrictions) {
+    case false:
+      break;
+    case 'allowlist':
+      roles.push({
+        constant: 'ALLOWLISTER_ROLE',
+        symbol: 'ALLOWLISTER',
+        variable: 'allowlister',
+        comment: 'Role allowed to add accounts to and remove accounts from the allowlist.',
+        procedureRoots: ['AllowlistManager::allow_account_root()', 'AllowlistManager::disallow_account_root()'],
+      });
+      break;
+    case 'blocklist':
+      roles.push({
+        constant: 'BLOCKLISTER_ROLE',
+        symbol: 'BLOCKLISTER',
+        variable: 'blocklister',
+        comment: 'Role allowed to add accounts to and remove accounts from the blocklist.',
+        procedureRoots: ['BlocklistManager::block_account_root()', 'BlocklistManager::unblock_account_root()'],
+      });
+      break;
+    default: {
+      const _: never = features.restrictions;
+      throw new Error('Unknown value for `restrictions`');
+    }
+  }
+
+  return roles;
+}
+
+function addProcedureRoles(c: ContractBuilder, features: FaucetFeatures): void {
+  const roles = roleAssignments(features);
+  if (roles.length === 0) {
+    return;
+  }
+
+  c.addUseClause('std::collections', 'BTreeMap');
+  c.addUseClause('miden_protocol::account', 'AccountProcedureRoot');
+  c.addUseClause('miden_protocol::account', 'RoleSymbol');
+
+  for (const role of roles) {
+    c.addConstant({
+      name: role.constant,
+      type: "&'static str",
+      value: `"${role.symbol}"`,
+      comments: [role.comment],
+    });
+  }
+
+  const variables = roles.map(
+    role => `let ${role.variable} = RoleSymbol::new(Self::${role.constant}).expect("role symbol is valid");`,
+  );
+
+  const entries = roles.flatMap(role =>
+    role.procedureRoots.map((root, i) => {
+      const value = i < role.procedureRoots.length - 1 ? `${role.variable}.clone()` : role.variable;
+      return `(${root}, ${value}),`;
+    }),
+  );
+
+  c.addFunction({
+    name: 'procedure_roles',
+    comments: [
+      ...paragraph('Returns the role required to invoke each authority-gated procedure.', 1),
+      '',
+      ...paragraph(
+        'Procedures without an entry, such as the metadata and policy setters, fall back to the `ADMIN` role.',
+        1,
+      ),
+    ],
+    args: [],
+    returns: 'BTreeMap<AccountProcedureRoot, RoleSymbol>',
+    code: [...variables, '', 'BTreeMap::from([', entries, '])'],
+    pub: true,
+  });
+}
+
+function configNotes(access: Access, features: FaucetFeatures): string[] {
+  const notes: string[] = [];
+  // Both access control modes install `Ownable2Step`: the owner is checked by the owner-only mint and burn
+  // policies, and the owner config note transfers ownership.
+  notes.push('OwnerConfigNote');
+  if (access === 'roles') {
+    notes.push('RbacConfigNote');
+  }
+  if (features.pausable) {
+    notes.push('PauseConfigNote');
+  }
+  switch (features.restrictions) {
+    case false:
+      break;
+    case 'allowlist':
+      notes.push('AllowlistConfigNote');
+      break;
+    case 'blocklist':
+      notes.push('BlocklistConfigNote');
+      break;
+    default: {
+      const _: never = features.restrictions;
+      throw new Error('Unknown value for `restrictions`');
+    }
+  }
+  if (features.updatableMetadata) {
+    notes.push('FaucetMetadataConfigNote');
+  }
+  return notes;
+}
+
+function addAllowedNotes(c: ContractBuilder, access: Access, features: FaucetFeatures): void {
+  c.addUseClause('std::collections', 'BTreeSet');
+  c.addUseClause('miden_protocol::note', 'NoteScriptRoot');
+  c.addUseClause('miden_standards::note', 'MintNote');
+  c.addUseClause('miden_standards::note', 'BurnNote');
+
+  const notes = ['MintNote', 'BurnNote'];
+  for (const note of configNotes(access, features)) {
+    c.addUseClause('miden_standards::note::config', note);
+    notes.push(note);
+  }
+
+  c.addFunction({
+    name: 'allowed_notes',
+    comments: [
+      ...paragraph('Returns the script roots of the notes the network may consume on behalf of the faucet.', 1),
+      '',
+      ...paragraph(
+        'Besides the MINT and BURN notes, the config notes carrying the management actions of the installed ' +
+          'components are allowlisted, so that the faucet can be managed by sending them.',
+        1,
+      ),
+    ],
+    args: [],
+    returns: 'BTreeSet<NoteScriptRoot>',
+    code: ['BTreeSet::from([', notes.map(note => `${note}::script_root(),`), '])'],
+    pub: true,
+  });
+}
+
+function addFeePolicyManager(c: ContractBuilder): void {
+  c.addUseClause('miden_protocol::account', 'AccountId');
+  c.addUseClause('miden_protocol::asset', 'AssetAmount');
+  c.addUseClause('miden_standards::account::fees', 'BasicConstantFeePolicy');
+  c.addUseClause('miden_standards::account::fees', 'FeePolicyManager');
+  c.addUseClause('miden_standards::note::config', 'NetworkAccountConfigNote');
+
+  c.addFunction({
+    name: 'fee_policy_manager',
+    comments: [
+      ...paragraph(
+        'Returns the fee policy manager charging network transaction fees in the asset issued by the faucet ' +
+          '`fee_faucet_id`.',
+        1,
+      ),
+      '',
+      ...paragraph(
+        'Every allowlisted note is scheduled with a zero fee, so consuming the notes of the faucet is free on ' +
+          'fee-free chains. Adjust the schedule to charge a fee per note script.',
+        1,
+      ),
+    ],
+    args: [{ name: 'fee_faucet_id', type: 'AccountId' }],
+    returns: 'FeePolicyManager',
+    code: [
+      'let fee_policy = BasicConstantFeePolicy::new().with_fees(',
+      [
+        'Self::allowed_notes()',
+        [
+          '.into_iter()',
+          '.chain([NetworkAccountConfigNote::script_root()])',
+          '.map(|script_root| (script_root, AssetAmount::ZERO)),',
+        ],
+      ],
+      ');',
+      '',
+      'FeePolicyManager::builder()',
+      ['.fee_faucet_id(fee_faucet_id)', '.active_fee_policy(fee_policy.into())', '.build()'],
+    ],
+    pub: true,
+  });
+}
+
+function addNetworkAccountCreation(c: ContractBuilder, access: Exclude<Access, false>, features: FaucetFeatures): void {
+  c.addUseClause('miden_protocol::account', 'Account');
+  c.addUseClause('miden_protocol::account', 'AccountId');
+  c.addUseClause('miden_protocol::errors', 'AccountError');
+  c.addUseClause('miden_standards::account::access', 'AccessControl');
+  c.addUseClause('miden_standards::account::auth', 'NetworkAccount');
+
+  const authority = access === 'ownable' ? 'owner' : 'admin';
+
+  const setup: Lines[] = [];
+  const accessControlComponents: string[] = [];
+  const authorityDoc: string[] = [];
+  let summary: string;
+  switch (access) {
+    case 'ownable':
+      summary = 'Creates the faucet as a public network account owned by `owner`.';
+      accessControlComponents.push('.with_components(AccessControl::Ownable2Step { owner })');
+      authorityDoc.push(
+        ...bullet(
+          '`owner`: account owning the faucet. It mints by sending MINT notes and manages the faucet by sending ' +
+            'config notes. Ownership can be transferred in two steps.',
+          1,
+        ),
+      );
+      break;
+    case 'roles': {
+      summary = 'Creates the faucet as a public network account administered by `admin`.';
+      c.addUseClause('miden_standards::account::access', 'Ownable2Step');
+      const hasRoles = roleAssignments(features).length > 0;
+      if (hasRoles) {
+        setup.push(
+          'let access_control = AccessControl::Rbac {',
+          ['admin,', 'procedure_roles: Self::procedure_roles(),'],
+          '};',
+        );
+      } else {
+        c.addUseClause('std::collections', 'BTreeMap');
+        setup.push('let access_control = AccessControl::Rbac {', ['admin,', 'procedure_roles: BTreeMap::new(),'], '};');
+      }
+      accessControlComponents.push('.with_components(access_control)', '.with_component(Ownable2Step::new(admin))');
+      authorityDoc.push(
+        ...bullet(
+          '`admin`: account seeded as the initial member of the `ADMIN` role, which administers every other ' +
+            'role, and as the owner checked by the owner-only mint and burn policies. Roles are granted and ' +
+            'revoked by sending RBAC config notes.',
+          1,
+        ),
+      );
+      break;
+    }
+    default: {
+      const _: never = access;
+      throw new Error('Unknown value for `access`');
+    }
+  }
+
+  setup.push('let fee_policy_manager = Self::fee_policy_manager(fee_faucet_id);', '');
+
+  const chain: string[] = [
+    '.expect("note allowlist is not empty")',
+    '.with_component(Self::faucet())',
+    ...accessControlComponents,
+    '.with_components(Self::token_policy_manager())',
+    ...featureComponents(c, features),
+    '.build()',
+  ];
+
+  c.addFunction({
+    name: 'create',
+    comments: [
+      ...paragraph(summary, 1),
+      '',
+      ...paragraph(
+        'The network executes the transactions of the faucet: the MINT and BURN notes, as well as the config ' +
+          'notes managing the faucet, are consumed automatically once allowlisted (see [`Self::allowed_notes`]).',
+        1,
+      ),
+      '',
+      '# Arguments',
+      '',
+      ...bullet(INIT_SEED_DOC, 1),
+      ...authorityDoc,
+      ...bullet('`fee_faucet_id`: ID of the faucet issuing the asset in which network transaction fees are paid.', 1),
+    ],
+    args: [
+      { name: 'init_seed', type: '[u8; 32]' },
+      { name: authority, type: 'AccountId' },
+      { name: 'fee_faucet_id', type: 'AccountId' },
+    ],
+    returns: 'Result<Account, AccountError>',
+    code: [...setup, 'NetworkAccount::builder(init_seed, Self::allowed_notes(), fee_policy_manager)', chain],
+    pub: true,
+  });
+}

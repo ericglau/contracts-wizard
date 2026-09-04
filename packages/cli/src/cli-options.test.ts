@@ -17,6 +17,7 @@ import {
 import { fungible, nonFungible, stablecoin as stellarStablecoin } from '@openzeppelin/wizard-stellar';
 import { erc20 as stylusErc20, erc721 as stylusErc721, erc1155 as stylusErc1155 } from '@openzeppelin/wizard-stylus';
 import { erc7984 } from '@openzeppelin/wizard-confidential';
+import { fungible as midenFungible, nonFungible as midenNonFungible } from '@openzeppelin/wizard-miden';
 import { hooks } from '@openzeppelin/wizard-uniswap-hooks';
 
 const CLI = join(__dirname, '..', 'dist', 'index.js');
@@ -792,6 +793,95 @@ test('confidential-erc7984: most options', t => {
     opts.votes,
   );
   t.is(output, erc7984.print(opts));
+});
+
+// --- Miden ---
+
+test('miden-fungible: basic', t => {
+  const output = run('miden-fungible', '--name', 'TestToken', '--symbol', 'TST');
+  t.is(output, midenFungible.print({ name: 'TestToken', symbol: 'TST' }));
+});
+
+test('miden-fungible: most options', t => {
+  const opts = {
+    name: 'TestToken',
+    symbol: 'TST',
+    decimals: '6',
+    maxSupply: '1000000',
+    description: 'A test token',
+    logoUri: 'https://example.com/logo.png',
+    externalLink: 'https://example.com',
+    updatableMetadata: true,
+    updatableMaxSupply: true,
+    burnable: false,
+    pausable: true,
+    restrictions: 'blocklist' as const,
+    access: 'roles' as const,
+  };
+  const output = run(
+    'miden-fungible',
+    '--name',
+    opts.name,
+    '--symbol',
+    opts.symbol,
+    '--decimals',
+    opts.decimals,
+    '--maxSupply',
+    opts.maxSupply,
+    '--description',
+    opts.description,
+    '--logoUri',
+    opts.logoUri,
+    '--externalLink',
+    opts.externalLink,
+    '--updatableMetadata',
+    '--updatableMaxSupply',
+    '--burnable',
+    'false',
+    '--pausable',
+    '--restrictions',
+    opts.restrictions,
+    '--access',
+    opts.access,
+  );
+  t.is(output, midenFungible.print(opts));
+});
+
+test('miden-non-fungible: most options', t => {
+  const opts = {
+    name: 'TestNFT',
+    symbol: 'TNFT',
+    description: 'A test collection',
+    logoUri: 'https://example.com/logo.png',
+    contractUri: 'https://example.com/collection.json',
+    updatableMetadata: true,
+    burnable: false,
+    pausable: true,
+    restrictions: 'allowlist' as const,
+    access: 'ownable' as const,
+  };
+  const output = run(
+    'miden-non-fungible',
+    '--name',
+    opts.name,
+    '--symbol',
+    opts.symbol,
+    '--description',
+    opts.description,
+    '--logoUri',
+    opts.logoUri,
+    '--contractUri',
+    opts.contractUri,
+    '--updatableMetadata',
+    '--burnable',
+    'false',
+    '--pausable',
+    '--restrictions',
+    opts.restrictions,
+    '--access',
+    opts.access,
+  );
+  t.is(output, midenNonFungible.print(opts));
 });
 
 // --- Uniswap Hooks ---
